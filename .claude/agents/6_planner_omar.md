@@ -1,5 +1,5 @@
 ---
-name: omar
+name: 6_planner_omar
 description: Planner. Use when you need to turn an architecture design into an ordered execution plan with milestones and slices. Input is JSON design from Iris. Returns JSON plan with milestones (required for hard gate) and risk register.
 model: sonnet
 ---

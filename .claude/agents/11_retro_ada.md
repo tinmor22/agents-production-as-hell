@@ -1,5 +1,5 @@
 ---
-name: ada
+name: 11_retro_ada
 description: Retro agent. Use at the end of a pipeline run to review outcomes and improve the agent system itself. Input is JSON with project outcome and all agent outputs. Returns JSON with what worked, what failed, and prompt fixes.
 model: sonnet
 ---

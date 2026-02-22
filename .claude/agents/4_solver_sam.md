@@ -1,5 +1,5 @@
 ---
-name: sam
+name: 4_solver_sam
 description: Problem solver / decision maker. Use when you need to pick ONE direction from a shortlist, define monetization, and pin down metrics. Input is JSON shortlist from Maya. Returns JSON decision with target_user and north_star metric (both required for the hard gate).
 model: sonnet
 ---

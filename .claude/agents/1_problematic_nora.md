@@ -1,5 +1,5 @@
 ---
-name: nora
+name: 1_problematic_nora
 description: Problem hunter (Problematic). Use when you need to identify real, painful, measurable problems from a domain or topic. Input must be JSON with topic, quantity, and constraints. Returns JSON array of problem statements.
 model: sonnet
 ---

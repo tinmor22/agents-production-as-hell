@@ -1,5 +1,5 @@
 ---
-name: viktor
+name: 7_coder_viktor
 description: Code implementor. Use when you need to implement a milestone from Omar's plan in Go. Reads existing code, writes files, runs tests. Input is JSON plan from Omar. Returns JSON with files changed and test results (tests must pass for hard gate).
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

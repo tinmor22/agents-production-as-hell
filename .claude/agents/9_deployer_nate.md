@@ -1,5 +1,5 @@
 ---
-name: nate
+name: 9_deployer_nate
 description: Deployer. Use after Priya to create deployment files (Dockerfile, fly.toml, etc.) and define the deploy command. Input is JSON from Priya. Returns JSON with files created and deploy_command (required for hard gate).
 tools: Read, Write, Edit, Bash, Glob
 model: opus

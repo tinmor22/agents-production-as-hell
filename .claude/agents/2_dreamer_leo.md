@@ -1,5 +1,5 @@
 ---
-name: leo
+name: 2_dreamer_leo
 description: Dreamer agent. Use when you need creative, weird-but-usable product ideas from a problem space. Input is JSON with topic and constraints. Returns JSON array of ideas with hypotheses and validation paths.
 model: sonnet
 ---

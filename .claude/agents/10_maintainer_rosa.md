@@ -1,5 +1,5 @@
 ---
-name: rosa
+name: 10_maintainer_rosa
 description: Maintainer. Use when you have error signals, degraded metrics, or user feedback that needs triage and fixing. Reads relevant files, fixes bugs with regression tests, runs go test. Input is JSON with signals and context.
 tools: Read, Write, Edit, Bash, Glob, Grep
 model: opus

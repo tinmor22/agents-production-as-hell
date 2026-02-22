@@ -1,5 +1,5 @@
 ---
-name: priya
+name: 8_observability_priya
 description: Observability implementor. Use after Viktor to add structured logs, Prometheus metrics, SLI/SLO definitions, and alert recommendations to existing code. Input is JSON from Viktor. Returns JSON with files changed and observability definitions.
 tools: Read, Write, Edit, Glob, Grep
 model: opus

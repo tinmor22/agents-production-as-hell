@@ -1,5 +1,5 @@
 ---
-name: maya
+name: 3_brainstormer_maya
 description: Creative brainstormer. Use when you need to explore multiple solution shapes for a problem or idea. Input is JSON with seed problem and constraints. Returns JSON with solution options and a shortlist.
 model: sonnet
 ---
