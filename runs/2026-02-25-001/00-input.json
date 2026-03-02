@@ -1,0 +1,8 @@
+{
+  "constraints": {
+    "b2b_or_b2c": "b2c",
+    "time_to_mvp_days": 14
+  },
+  "quantity": 5,
+  "topic": "AI + smart glasses to improve social skills in real life"
+}

@@ -1,0 +1,92 @@
+{
+  "solution_options": [
+    {
+      "option_name": "Failure Whisperer — OctoPrint Vision Guard",
+      "approach": "An OctoPrint plugin that runs a tight polling loop: every 90 seconds, it grabs a MJPEG frame from the printer webcam, bundles it with the current G-code layer number and expected layer height, and sends both to the claude CLI with a vision-capable model. The LLM response is parsed for a structured JSON verdict — CONTINUE, WARN, or CANCEL. On CANCEL the plugin calls the OctoPrint REST API to pause the print and fires a push notification. No cloud backend, no custom model, no training data.",
+      "key_features": [
+        "MJPEG frame capture from OctoPrint's built-in webcam stream using HTTP snapshot endpoint",
+        "Per-layer context injection: layer_number, z_height, expected_print_time_remaining, filament_used_mm",
+        "Structured LLM verdict parsing: failure_detected (bool), confidence (0-1), failure_type (enum: spaghetti|delamination|clog|warping|none), recommended_action (CONTINUE|PAUSE|CANCEL)",
+        "OctoPrint REST API integration for pause/cancel commands",
+        "Local verdict log written to ~/.octoprint/failure_whisperer_log.jsonl for post-mortem review",
+        "Configurable confidence threshold before auto-cancel (default 0.85)",
+        "Pushover or ntfy.sh notification on WARN and CANCEL events"
+      ],
+      "why_it_wins": "Attacks the highest-severity problem with the tightest possible integration surface. OctoPrint already has the webcam, the layer counter, and an HTTP API — this is glue code, not platform code. Real-time prevention of a 6-hour print failure pays for itself on the first save. Zero new infrastructure: the claude CLI runs on the same machine as OctoPrint.",
+      "main_risks": [
+        "Claude vision model latency may exceed 90-second polling budget under load — need circuit breaker to skip frames rather than block the print",
+        "False positives that cancel good prints will destroy trust fast; threshold tuning is critical and user-specific",
+        "OctoPrint plugin ecosystem has Python-only conventions — the LLM call must be a subprocess or HTTP call to a local Go sidecar, not native Go",
+        "Webcam angle and lighting vary wildly across setups; model may underperform on non-standard rig orientations",
+        "Claude vision model updates could change verdict behavior without notice — need version-pinned prompts and regression test corpus of labeled frames"
+      ],
+      "mvp_cut": [
+        "Ship as a Python OctoPrint plugin that shells out to claude CLI — no Go sidecar for v1",
+        "Only MJPEG snapshot + layer number in context — drop z_height and filament_used for v1",
+        "Hard-code notification to ntfy.sh only — skip Pushover integration",
+        "No auto-cancel in v1 — only PAUSE and user confirmation required before cancel",
+        "Log to flat JSONL file only — no dashboard, no web UI"
+      ],
+      "pricing_angle": "Free open-source plugin. Monetize via a hosted cloud relay for users who run OctoPrint on devices without the claude CLI installed — $4/month for cloud-proxied vision checks."
+    },
+    {
+      "option_name": "Print Intelligence CLI — Post-Mortem Debugger plus Material Passport",
+      "approach": "A single Go binary called `printintel` that bundles two high-utility subcommands targeting the post-print workflow. `printintel diagnose` accepts a failure photo and an optional slicer .ini or .cfg profile, calls the claude CLI with vision, and outputs a structured JSON diagnosis. `printintel passport` accepts filament brand, material, print temperature, and layer height flags and outputs a machine-readable JSON material passport.",
+      "key_features": [
+        "printintel diagnose: JPEG/PNG path input, optional slicer profile ingestion (.ini/.cfg parsed as key-value), structured JSON output with failure_mode (enum), probable_cause (string), confidence (0-1), slicer_changes (map[string]string), and reprint_checklist ([]string)",
+        "printintel passport: --brand, --material, --temp, --layer-height flags; JSON output with base_polymer, tg_celsius, storage_humidity_max_pct, uv_sensitivity (bool), chemical_resistance (map), paint_primer_recommendation, incompatible_materials ([]string)",
+        "Both commands write to --output flag path if provided, else stdout",
+        "Shell-completable flags via Cobra",
+        "printintel history subcommand reads all past diagnosis JSONs from ~/.printintel/ and summarizes recurring failure patterns"
+      ],
+      "why_it_wins": "Addresses two high-pain moments that every FDM user hits repeatedly — failed print diagnosis and material onboarding — in a single zero-infra binary. CLI shape fits into existing maker workflows. No web account, no subscription wall, no data sent to a third-party server. Extremely fast to ship: both subcommands are thin claude CLI wrappers.",
+      "main_risks": [
+        "Photo quality is highly variable; diagnosis accuracy depends on user taking a useful shot",
+        "Slicer profile formats differ across PrusaSlicer, Cura, Bambu Studio, OrcaSlicer — INI parsing covers PrusaSlicer/OrcaSlicer but Cura uses JSON and Bambu uses proprietary format",
+        "Material passport accuracy for niche or house-brand filaments may be low",
+        "No feedback loop — users cannot correct wrong diagnoses, so error rate is invisible without telemetry"
+      ],
+      "mvp_cut": [
+        "Ship diagnose subcommand first; delay passport to v1.1",
+        "Accept only JPEG input — skip PNG and HEIC conversion in v1",
+        "Parse only PrusaSlicer .ini profiles — document Cura/Bambu as not yet supported",
+        "Drop history subcommand entirely from v1",
+        "No --output flag in v1 — always write to stdout"
+      ],
+      "pricing_angle": "Free CLI, MIT license. Monetize via a paid `printintel cloud` subcommand that stores diagnoses and passports in a hosted account — $12/month per shop."
+    },
+    {
+      "option_name": "Print Farm Dispatcher — LLM Job Scheduler via OctoPrint and Bambu Cloud",
+      "approach": "A Go CLI and optional daemon that reads farm_state.json and jobs_queue.json, calls the claude CLI to reason over the combined context and produce an assignment plan as JSON, then writes the assignments back to OctoPrint via its REST API or to Bambu Cloud via its API. The LLM acts as the scheduling brain, understands natural language priority rules, and explains its reasoning in a human-readable field alongside each assignment.",
+      "key_features": [
+        "farm_state.json schema: printers[] with id, model, nozzle_diameter, loaded_material, status, estimated_completion_iso8601",
+        "jobs_queue.json schema: jobs[] with id, stl_path, material_required, nozzle_required, deadline_iso8601, priority (1-5), notes",
+        "LLM output schema: assignments[] with job_id, printer_id, start_after_iso8601, reasoning (string), swap_required (bool)",
+        "OctoPrint REST API write: POST /api/files/local + POST /api/job wrapped in Go HTTP client",
+        "Dry-run mode: print assignment plan to stdout as formatted table without writing to any printer API",
+        "Natural language priority rules in a farm_rules.txt file read into every LLM call"
+      ],
+      "why_it_wins": "Replaces 1-2 hours of daily spreadsheet work for farm operators. The LLM handles messy real-world constraints without requiring a rules engine. JSON-in/JSON-out architecture integrates with any existing farm management tool. High willingness to pay: operators are running a production business and losing money on idle printers.",
+      "main_risks": [
+        "LLM scheduling decisions are non-deterministic — same input may produce different assignments, making auditability hard",
+        "Bambu Cloud API is unofficial and undocumented; it may break without notice",
+        "farm_state.json must be kept fresh; stale data produces bad assignments",
+        "50+ printer farms may exceed context window limits when serializing full farm state",
+        "Operators with established scheduling workflows will resist adopting a new JSON schema"
+      ],
+      "mvp_cut": [
+        "Dry-run mode only in v1 — print assignment plan as table, no API writes to printers",
+        "OctoPrint integration only — drop Bambu Cloud from v1",
+        "Manual farm_state.json and jobs_queue.json — no OctoPrint sync to auto-populate state",
+        "Drop webhook daemon — run as on-demand CLI command only",
+        "Drop conflict detection — just produce best-effort assignments and note unassigned jobs"
+      ],
+      "pricing_angle": "Free CLI for farms under 5 printers. Paid tier at $29/month per farm for daemon mode with OctoPrint auto-sync, Bambu Cloud integration, Slack/Discord notifications, and web dashboard. Enterprise at $99/month for 20+ printer farms."
+    }
+  ],
+  "shortlist": [
+    "Failure Whisperer — OctoPrint Vision Guard",
+    "Print Intelligence CLI — Post-Mortem Debugger plus Material Passport",
+    "Print Farm Dispatcher — LLM Job Scheduler via OctoPrint and Bambu Cloud"
+  ]
+}

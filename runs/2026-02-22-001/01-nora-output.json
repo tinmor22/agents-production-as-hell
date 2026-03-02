@@ -1,0 +1,151 @@
+{
+  "problems": [
+    {
+      "title": "Adults with social anxiety cannot practice high-stakes conversations without real human cost",
+      "problem_statement": "People with social anxiety disorder (estimated 12% of US adults) need rehearsal for job interviews, difficult family conversations, and networking events. Current options are one-time coaching sessions ($150-300/hr) or static YouTube videos. There is no environment where they can replay a scenario, get specific behavioral feedback, and iterate without social consequence. Anxiety worsens when every attempt counts.",
+      "target_user": "Adults with diagnosed or self-identified social anxiety, aged 22-45, who have avoided promotions, relationships, or opportunities due to conversation avoidance",
+      "current_workaround": "Therapists using CBT role-play (expensive, limited session time), self-help books (no feedback loop), rehearsing alone in a mirror (no external signal)",
+      "why_now": "On-device speech processing (Whisper-class models) now runs in real time on consumer hardware. Multimodal models can analyze tone, pacing, filler words, and sentiment together. The cost per inference has dropped enough that per-session feedback is economically viable without a clinician.",
+      "success_metrics": [
+        "User-reported anxiety score (GAD-7) before and after 8-week use",
+        "Number of avoided scenarios the user successfully completes post-product",
+        "Session completion rate (proxy for engagement vs. abandonment from overwhelm)",
+        "Retention at 30 and 60 days"
+      ],
+      "data_signals": [
+        "Reddit threads on r/socialanxiety and r/anxiety showing demand for practice tools",
+        "Therapist forums discussing scarcity of between-session practice tools",
+        "Google Trends: 'how to practice conversations' rising 3 years consecutively",
+        "App store reviews for existing meditation/anxiety apps requesting conversation features"
+      ],
+      "severity": "high",
+      "notes": "This is a medical-adjacent use case. Avoid clinical claims. The real moat is the feedback loop quality, not the AI model. A solo founder can build an MVP using voice-to-text plus a structured rubric without smart glasses."
+    },
+    {
+      "title": "Professionals in sales and customer success have no objective post-call diagnostics tied to outcome data",
+      "problem_statement": "Sales managers review less than 5% of recorded calls because manual review is too slow. Reps receive subjective coaching based on gut feel, not behavioral patterns. When a deal is lost, there is no systematic analysis of which conversational behaviors (interruptions, talk-time ratio, objection responses) correlated with the loss. Training spend is high ($2,000-4,000 per rep per year) but unvalidated.",
+      "target_user": "Sales managers at B2B SaaS companies with teams of 5-30 reps, companies with $5M-$50M ARR where deal size justifies coaching investment",
+      "current_workaround": "Gong and Chorus exist for call recording and some AI analysis, but they are expensive ($1,200-$2,000 per seat per year), require procurement cycles, and their feedback is not tied to individual rep behavioral change over time",
+      "why_now": "Gong's pricing has pushed mid-market teams toward alternatives. Open-source transcription plus LLM analysis can now replicate 60-70% of Gong's feature set at 10% of the cost. This is a real budget being reallocated.",
+      "success_metrics": [
+        "Win rate change after 90 days of structured feedback vs. control group",
+        "Manager hours saved per week on call review",
+        "Rep behavior change score (measurable shift in talk-time ratio, filler word rate, objection handling pattern)",
+        "Cost per coached call vs. current baseline"
+      ],
+      "data_signals": [
+        "Gong churn data (obtainable via LinkedIn job postings for 'Gong admin' disappearing at companies)",
+        "LinkedIn posts from sales managers complaining about coaching bandwidth",
+        "Procurement forums showing Gong cost as a blocker for sub-50 seat teams",
+        "Job boards: 'sales enablement' roles growing faster than sales headcount"
+      ],
+      "severity": "high",
+      "notes": "Crowded market at the top (Gong, Chorus, Salesloft). The gap is sub-50 seat teams that cannot justify enterprise pricing. Do not build another Gong. Build the version that a solo founder can sell to a single VP of Sales in one call."
+    },
+    {
+      "title": "Smart glasses and AR wearables collecting ambient audio create compliance liability with no existing workflow solution",
+      "problem_statement": "Any product that continuously records real-world conversations faces a patchwork of consent laws: two-party consent in 11 US states, GDPR Article 9 for sensitive data, BIPA in Illinois for biometric voice prints. A startup shipping a social skills coach wearable has no established playbook for: storing audio, handling deletion requests, managing third-party consent (the people the user talks to), or responding to law enforcement requests. A single regulatory misstep can kill the product post-launch.",
+      "target_user": "Technical founders and solo developers building consumer-facing voice or wearable products who lack legal budget for ongoing counsel",
+      "current_workaround": "Copying privacy policies from other apps (legally invalid for new data types), adding blanket consent screens (not defensible for ambient capture), or simply ignoring the problem until it becomes a crisis",
+      "why_now": "Meta Ray-Ban glasses mainstreamed the 'smart glasses with camera/mic' category. Regulators are now actively watching. The FTC issued guidance on biometric data in 2023. Three EU GDPR fines specifically targeting voice assistant data dropped in 2024. The window between product launch and regulatory attention is shrinking.",
+      "success_metrics": [
+        "Time from product concept to legally defensible data architecture (should be days, not months)",
+        "Number of consent edge cases covered by a structured framework",
+        "Legal review cost reduction vs. hiring a privacy attorney per feature",
+        "Incident rate: products using the framework vs. without"
+      ],
+      "data_signals": [
+        "FTC enforcement actions on biometric/voice data (public record, increasing frequency)",
+        "GitHub issues on open-source wearable projects asking 'how do we handle consent'",
+        "YC forums and Indie Hackers threads where founders explicitly say privacy law is blocking launch",
+        "Insurance quotes for product liability on wearable AI products (measurable cost signal)"
+      ],
+      "severity": "high",
+      "notes": "This is a problem a solo founder can address as a compliance SaaS or structured legal template product, not just as a feature. It is also a problem the social skills coach product itself will face, making it a prerequisite rather than a nice-to-have."
+    },
+    {
+      "title": "Autistic adults receive no real-time support during neurotypical social interactions where they are most likely to misread cues",
+      "problem_statement": "Autistic adults (estimated 2.2% of US adults, many undiagnosed) consistently report that the hardest part of employment and relationships is real-time social interpretation: reading sarcasm, detecting frustration in a manager's tone, knowing when to stop talking. Post-hoc analysis from a therapist happens days after the interaction when memory has faded and the social cost has already occurred. There is no in-the-moment assistive layer.",
+      "target_user": "Autistic adults aged 18-40 who are employed or seeking employment, particularly those in professional environments with high social demand (open offices, client-facing roles)",
+      "current_workaround": "Social skills therapy groups (weekly, not real-time), job coaches (expensive, not always present), relying on a trusted neurotypical friend to debrief after interactions",
+      "why_now": "Bone conduction earphones (Shokz, etc.) allow ambient audio capture without social stigma. Real-time inference latency on-device is now under 300ms for basic sentiment classification. The disability assistive tech market is underserved and less contested than the wellness market.",
+      "success_metrics": [
+        "User-reported confidence in reading social cues (validated scale) before vs. after 12 weeks",
+        "Employment retention rate for autistic users vs. baseline (CDC data shows 85% underemployment)",
+        "Number of misread interactions the user can identify and self-correct post-feedback",
+        "Daily active use rate (proxy for whether the tool is actually useful in real scenarios)"
+      ],
+      "data_signals": [
+        "r/autism and r/aspergers threads requesting exactly this type of tool (searchable, high volume)",
+        "Disability advocacy org surveys showing employment as top unmet need",
+        "OT and speech therapist forums discussing lack of between-session generalization tools",
+        "App store: existing social skills apps have 3.2 average rating with reviews asking for real-time features"
+      ],
+      "severity": "high",
+      "notes": "This is the use case with the clearest unmet need and the most measurable outcome. It is also the use case where a founder must be most careful about not positioning the product as a medical device. Assistive tool, not treatment."
+    },
+    {
+      "title": "Feedback latency between a social interaction and behavior change advice is too long to drive habit formation",
+      "problem_statement": "The core mechanism of behavioral change requires feedback within seconds to minutes of a behavior, not hours or days. Apps that analyze uploaded audio recordings from a conversation give feedback the next day. By then, the emotional context is gone, the user cannot replay the moment sensorially, and the corrective instruction does not attach to the memory trace that needs modification. This is not a feature gap: it is a neuroscience constraint that makes most current social coaching apps ineffective by design.",
+      "target_user": "Product teams building social skills or communication coaching apps who are measuring engagement but not behavior change, and cannot figure out why retention drops after week 2",
+      "current_workaround": "Asking users to journal immediately after conversations (friction, low compliance), sending push notifications with generic tips unrelated to the actual interaction, building elaborate streak systems that measure engagement not improvement",
+      "why_now": "On-device inference makes sub-30-second feedback possible without sending audio to a cloud. This eliminates the latency gap that made real-time feedback impossible two years ago. The technical blocker is gone. The product design problem remains unsolved.",
+      "success_metrics": [
+        "Behavior change at 30 days: specific target behavior frequency (e.g., filler word rate, interruption count)",
+        "Feedback-to-behavior correlation: does feedback given within 60 seconds produce more change than feedback given at 24 hours",
+        "Session-to-behavior-change conversion rate vs. delayed-feedback baseline",
+        "User-reported 'aha moment' rate (qualitative but trackable via in-app prompt)"
+      ],
+      "data_signals": [
+        "Academic literature on feedback timing and habit formation (measurable effect sizes exist)",
+        "Retention curves for existing coaching apps showing week-2 drop-off (Sensor Tower data)",
+        "User reviews of Orai, Speeko, and similar apps citing lack of improvement despite use",
+        "Behavioral science consulting firms billing rates for 'habit formation design' (signals budget exists)"
+      ],
+      "severity": "medium",
+      "notes": "This is a problem a solo founder who understands behavioral science can own. It requires no new hardware. It requires a rethinking of the feedback delivery model. The insight itself is the moat, not the technology."
+    },
+    {
+      "title": "Non-native English speakers in professional environments cannot identify which specific speech patterns are triggering bias against them",
+      "problem_statement": "Non-native English speakers (40M+ in US professional settings) face documented economic penalties: slower promotion rates, being talked over in meetings, ideas attributed to others after rephrasing. They know something is wrong but cannot identify whether the problem is accent, vocabulary, pacing, assertiveness signaling, or turn-taking behavior. Generic accent reduction courses address pronunciation but not the specific patterns causing specific social outcomes in their actual workplace.",
+      "target_user": "Non-native English speakers in US or UK professional environments, particularly engineers, consultants, and managers from East Asian, South Asian, and Eastern European backgrounds, earning $80K-$200K where promotion outcomes are high-stakes",
+      "current_workaround": "Generic accent reduction programs ($500-2,000, low ROI), executive coaches who lack linguistic analysis tools, peer feedback that is socially awkward to solicit, watching YouTube videos on 'sounding more confident'",
+      "why_now": "LLMs can now analyze speech transcripts for assertiveness markers, hedging language, uptalk patterns, and turn-taking signals with enough specificity to give actionable feedback. This was not possible with rules-based NLP. The demographic of non-native speakers in high-income professional roles is growing and has money to spend.",
+      "success_metrics": [
+        "Measurable shift in target speech behavior (e.g., hedging phrase frequency, question vs. statement ratio) over 8 weeks",
+        "User-reported meeting participation rate change",
+        "Promotion or raise outcome tracking at 12 months (requires longer study but is the real north star)",
+        "Net Promoter Score from target demographic (proxy for whether product actually addresses the felt pain)"
+      ],
+      "data_signals": [
+        "LinkedIn salary data showing promotion rate gaps for non-native speakers in tech (public research exists)",
+        "Reddit r/cscareerquestions threads from non-native speakers explicitly asking how to 'sound more senior'",
+        "Accent reduction coach pricing and waitlists (demand signal)",
+        "Corporate DEI survey data showing communication as top self-reported barrier for underrepresented groups"
+      ],
+      "severity": "medium",
+      "notes": "Avoid framing this as 'fixing' accents. The problem is identifying which patterns map to which outcomes in a specific context. The product must be careful not to reinforce assimilation pressure while still delivering measurable professional value. Positioning matters as much as the technology."
+    },
+    {
+      "title": "Managers giving performance feedback cannot tell whether their delivery is causing defensive shutdown versus productive reflection in the recipient",
+      "problem_statement": "Managers at all levels are trained on what to say in feedback conversations but not on how their delivery lands in real time. A manager who believes they gave clear, constructive feedback may have triggered defensive shutdown due to tone, pacing, or word choice, making the content irrelevant. There is no signal during or after the conversation to tell the manager whether the recipient was in a receptive state. The result is feedback that is given but not integrated, repeated performance issues, and manager frustration.",
+      "target_user": "Mid-level managers (team leads, engineering managers, senior ICs transitioning to people management) at companies with 50-500 employees where HR training budgets exist but personalized coaching does not scale",
+      "current_workaround": "Manager training workshops (one-time, no follow-up), 360 feedback cycles (quarterly, too delayed), HR business partners (too few to cover all managers), video recording yourself and reviewing (low compliance, no external analysis)",
+      "why_now": "Companies cut L&D budgets in 2023-2024 while manager effectiveness complaints in engagement surveys stayed flat or worsened. There is a documented gap between manager training spend and manager effectiveness outcomes. A tool that gives specific behavioral feedback to a manager after a 1:1 has no direct competitor below the executive coaching price point ($500+/session).",
+      "success_metrics": [
+        "Employee engagement score change on direct reports of managers using the tool vs. control group",
+        "Manager self-reported confidence in feedback delivery (validated scale)",
+        "Repeat performance issue rate: same issue raised more than once with the same employee",
+        "360 feedback score trajectory for participating managers over 6 months"
+      ],
+      "data_signals": [
+        "Gallup engagement data showing manager quality as top driver of disengagement (public, annually updated)",
+        "HR tech procurement data showing 'manager effectiveness' as top 3 L&D budget category",
+        "LinkedIn Learning enrollment data for management courses (signals demand but not satisfaction)",
+        "Glassdoor reviews: 'my manager' is the most common subject in negative reviews (sentiment analysis of public data)"
+      ],
+      "severity": "medium",
+      "notes": "This is a use case that does not require wearables. A post-conversation audio upload or structured reflection prompt after a 1:1 is enough for an MVP. The smart glasses angle adds friction and privacy liability without adding proportional value for this specific user. Build the simple version first."
+    }
+  ]
+}

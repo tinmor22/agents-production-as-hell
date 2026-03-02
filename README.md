@@ -69,6 +69,10 @@ These are the swarm’s “laws of physics.”
 
 ---
 
+![Pipeline overview](.claude/pipeline.png)
+
+---
+
 # Agent/workflow designer — `Conductor` (human name: **Elena**)
 
 ## DESCRIPTION

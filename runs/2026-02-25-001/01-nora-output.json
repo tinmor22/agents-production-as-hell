@@ -1,0 +1,104 @@
+{
+  "problems": [
+    {
+      "title": "No real-time feedback on conversation monopolization causing social isolation",
+      "problem_statement": "People with ADHD, autism spectrum traits, or social anxiety frequently dominate conversations without realizing it — interrupting, monologuing, or failing to ask reciprocal questions. They only discover the damage post-hoc when friends stop responding or invitations dry up. There is no in-the-moment signal to correct course. Smart glasses with a microphone can detect talk-time ratio, interruptions per minute, and question-asking frequency in real time and deliver a subtle haptic or audio cue to the wearer.",
+      "target_user": "Adults aged 18-35 diagnosed with ADHD or mild ASD who have been told by therapists or partners that they talk too much or don't listen — active therapy clients with an explicit social skills goal.",
+      "current_workaround": "Therapist role-play sessions (1 hour/week, $150-300/session), journaling after social events, partner feedback (emotionally loaded, delayed). None of these operate in the moment during real conversations.",
+      "why_now": "Ray-Ban Meta glasses (2024) normalized always-on wearable audio. Bluetooth audio processing latency dropped below 80ms on consumer hardware. Real-time on-device whisper-class ASR is now feasible without cloud round-trips on Apple Neural Engine and Snapdragon chips.",
+      "success_metrics": [
+        "User's self-reported talk-time ratio improves from >70% to <55% over 30 days of use",
+        "User receives fewer than 3 correction cues per 10-minute conversation after week 4 (vs week 1 baseline)",
+        "7-day retention above 40% (measures whether the pain is real enough to keep wearing)"
+      ],
+      "data_signals": [
+        "Therapy intake forms listing 'conversation balance' as a goal",
+        "Reddit threads in r/ADHD and r/aspergers: 'I talk too much', 'people stop inviting me'",
+        "Therapist billing codes 90837 + social skills training notes",
+        "Google Trends: 'how to stop interrupting people' — steady 12-month search volume"
+      ],
+      "severity": "high",
+      "notes": "MVP in 14 days is feasible: use Ray-Ban Meta open API or a phone + earpiece as sensor, run VAD + speaker diarization locally, deliver cue via paired earbud. No glasses hardware required for day-1 test. Core loop: detect > cue > log. B2C sales channel: ADHD coach referrals and ADHD subreddit."
+    },
+    {
+      "title": "Post-conversation memory failure erodes relationship continuity",
+      "problem_statement": "People who meet new contacts at networking events, parties, or dates routinely forget names, details shared, and conversational threads within 48 hours. When they encounter the same person again, the inability to recall ('you mentioned your sister was sick') signals low interest and kills rapport. This is not a memory disorder — it is an attention and encoding problem under social stress. Smart glasses can capture ambient conversation summaries and surface them before the next encounter.",
+      "target_user": "B2C adults aged 25-45 who attend recurring social or professional networking events (meetups, conferences, co-working spaces) and have expressed frustration at forgetting names or personal details shared by new acquaintances.",
+      "current_workaround": "Manual notes on phone immediately after conversations (low compliance, disruptive), CRM tools like Monica.hq (requires manual data entry, not used in the moment), LinkedIn scanning before meetings (only covers professional facts).",
+      "why_now": "Always-on wearable audio is socially normalized in 2025. On-device summarization via small LLMs (Phi-3-mini, Gemma 2B) runs in under 2 seconds on ARM chips. Privacy-preserving local processing removes the main adoption barrier from 2022-era solutions.",
+      "success_metrics": [
+        "User successfully references a detail from a prior conversation in >50% of second encounters (self-reported or companion-confirmed)",
+        "App used to review summaries before >60% of scheduled follow-up events",
+        "Retention at day 30 above 35%"
+      ],
+      "data_signals": [
+        "Monica.hq has 12k+ GitHub stars — proxy for demand for personal CRM without manual entry",
+        "r/socialskills: 'I always forget names' thread has 2.3k upvotes",
+        "Lifelogging app graveyard (Narativ, Saga, Memoir) — demand existed, execution failed on capture friction",
+        "Conference attendee surveys consistently rank 'following up effectively' as top networking challenge"
+      ],
+      "severity": "medium",
+      "notes": "14-day MVP: phone-based capture (no glasses required), conversation summary via on-device LLM, contact card with key details stored locally, push notification 1 hour before a calendar event involving that contact. Glasses are an enhancement layer, not a blocker. Biggest risk: people opt out of recording others without consent — must solve consent UI on day 1."
+    },
+    {
+      "title": "Job seekers fail behavioral interviews due to undetected filler word and hedging patterns",
+      "problem_statement": "Candidates preparing for behavioral interviews ('tell me about a time when...') systematically undermine credibility with excessive filler words (um, like, you know), upward inflection on statements, and over-hedged language ('I kind of led the project'). Mock interview apps give feedback after the session. Smart glasses can deliver a silent cue (haptic or bone conduction) the moment a pattern fires, enabling in-session self-correction — the only time it changes behavior.",
+      "target_user": "Adults aged 22-35 actively interviewing for jobs earning $80k+ who have failed at least one round of behavioral interviews and are spending money on interview coaching ($200-800/package).",
+      "current_workaround": "Human interview coaches ($200-400/hour), Yoodli and similar apps (post-session feedback only, no real-time cue), recording yourself and reviewing (time-consuming, no behavior change loop).",
+      "why_now": "Job market tightened in 2024-2025, increasing spend on interview prep. Real-time ASR on device crossed the quality threshold for filler detection in 2024. The behavioral pattern (filler word) is simple enough to detect with <200ms latency — no LLM needed, rule-based ASR post-processing is sufficient.",
+      "success_metrics": [
+        "Filler word frequency drops by >40% from session 1 to session 5 (measurable via app logs)",
+        "User self-reports passing to next interview round after using the tool for 2+ weeks",
+        "DAU/MAU ratio above 0.25 during active interview prep period"
+      ],
+      "data_signals": [
+        "Yoodli raised $13M Series A (2023) — validates market, but leaves real-time in-session gap",
+        "Google Trends: 'interview filler words' and 'um filler word' show consistent search volume",
+        "LinkedIn Learning: public speaking courses are top-10 most enrolled — proxy for stated demand",
+        "Reddit r/cscareerquestions: recurring threads on filler words and interview nerves"
+      ],
+      "severity": "high",
+      "notes": "14-day MVP: phone in pocket running VAD + filler word regex on ASR transcript, earbud delivers a click cue. No glasses hardware needed. Glasses add eye contact and posture layers later. Monetization: one-time $29 or $9/month. Acquisition: r/cscareerquestions, Blind, LinkedIn ads targeting 'job seeking' signal. Filler detection is the sharpest, most measurable pain — start there only."
+    },
+    {
+      "title": "First-date and romantic conversation anxiety produces detectable avoidance behaviors with no corrective feedback",
+      "problem_statement": "People with dating anxiety default to interrogation-style questioning (ask, never share), self-disclosure monologues (share, never ask), or topic-switching under discomfort. These patterns are invisible to the person exhibiting them and are the proximate cause of low second-date rates. Dating coaches cost $200-500/session. Smart glasses can measure question-to-statement ratio, topic dwell time, and silence duration in real time and cue the wearer to balance the exchange.",
+      "target_user": "Single adults aged 22-40 actively using dating apps (Hinge, Bumble) who go on first dates but consistently fail to convert to second dates — a cohort that can be identified by self-report in onboarding ('I go on first dates but not second dates').",
+      "current_workaround": "Dating coaches (expensive, no in-moment feedback), post-date analysis with friends (emotionally biased, delayed), journaling (no pattern detection). No product currently delivers real-time in-date social feedback.",
+      "why_now": "Dating app revenue exceeded $5.5B in 2024 (Statista), proving willingness to pay for romantic success. Wearable audio is normalized. The specific failure mode (first-to-second date conversion) is measurable by the user and therefore actionable as a product metric.",
+      "success_metrics": [
+        "User's second-date conversion rate increases from self-reported baseline (typically <30%) to >50% after 60 days of use",
+        "Question-to-statement ratio moves toward 40/60 target within 3 coaching sessions (logged by app)",
+        "Net Promoter Score above 40 among users who completed 5+ date sessions"
+      ],
+      "data_signals": [
+        "Dating coach market estimated at $3B+ globally (IBISWorld)",
+        "Hinge internal data (published 2024): 'most dates don't lead to a second date' — company-level acknowledgment of the problem",
+        "r/dating_advice: 'why don't I get second dates' is a perennial top post",
+        "YouTube: 'how to be a better conversationalist on dates' — millions of views across top videos"
+      ],
+      "severity": "medium",
+      "notes": "14-day MVP constraint makes this riskier than the interview problem — date context is emotionally high-stakes, consent to be 'monitored' during a date is a hard UX problem, and the feedback loop (second date yes/no) is slow. Recommend de-risking by starting with explicit practice dates or role-play sessions before live use. Glasses add discretion; phone-in-pocket is viable for MVP. Severity marked medium only because of the consent and emotional-stakes UX risk, not because the pain is small."
+    },
+    {
+      "title": "Managers blind to their own meeting dominance patterns despite 360-degree feedback cycles",
+      "problem_statement": "Managers who dominate team meetings — speaking more than 60% of the time, answering their own questions, cutting off direct reports — receive this feedback in quarterly reviews, months after the behavior solidified. By then, team psychological safety is already eroded and attrition risk has increased. Real-time talk-time monitoring during 1:1s and team standups, delivered via a discreet wearable, closes the feedback loop from 90 days to seconds.",
+      "target_user": "B2C individual purchase by managers aged 30-50 who have received 360 feedback citing 'doesn't listen' or 'dominates conversations' — a population that HR coaches and executive coaches actively work with.",
+      "current_workaround": "Executive coaching ($500-1000/hour), 360 feedback tools (Lattice, Culture Amp — delayed and aggregated), self-recording meetings and reviewing transcripts (high friction, low compliance). None operate in real time.",
+      "why_now": "Zoom and Meet normalized audio analysis of meetings. Manager burnout and retention crisis (2024-2025) increased individual investment in leadership development tools. Wearable audio for professionals is no longer stigmatized post-Meta Ray-Ban mainstream adoption.",
+      "success_metrics": [
+        "Manager's talk-time percentage in team meetings drops from >60% to <40% over 8 weeks (logged by app)",
+        "Direct report satisfaction scores (measured via anonymous pulse, optional add-on) increase by >10 points",
+        "User completes 20+ logged meetings in first 30 days (measures sticky engagement, not just install)"
+      ],
+      "data_signals": [
+        "Lattice, Culture Amp combined revenue >$200M — proxy for enterprise willingness to pay for manager feedback",
+        "Harvard Business Review: 'managers speak 70% of meeting time' — cited in multiple studies",
+        "Executive coach forums (ICF community): 'listening' is top-3 coaching goal across client base",
+        "Google Trends: 'how to be a better listener at work' — consistent upward trend 2022-2025"
+      ],
+      "severity": "medium",
+      "notes": "This is B2C individual purchase (manager buys for self) not B2B — fits constraint. 14-day MVP: phone on desk during meetings, VAD + diarization to split manager vs others talk time, end-of-meeting summary card with percentages. Glasses add ambient discretion. Main risk: manager must self-identify as the problem, which requires psychological readiness — acquisition channel (executive coaches, ICF network) self-selects for this readiness."
+    }
+  ]
+}
