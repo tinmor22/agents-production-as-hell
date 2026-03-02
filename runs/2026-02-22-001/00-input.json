@@ -1,0 +1,9 @@
+{
+  "constraints": {
+    "b2b_or_b2c": "either",
+    "time_to_mvp_days": 14
+  },
+  "quantity": 5,
+  "target": "fly.io",
+  "topic": "3D print farm"
+}

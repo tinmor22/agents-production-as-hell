@@ -1,0 +1,151 @@
+{
+  "problems": [
+    {
+      "title": "3D Print Failure Detection Is Manual and Post-Mortem",
+      "problem_statement": "FDM prints fail mid-job due to layer delamination, spaghetti extrusion, or nozzle clogs. Operators discover failures only after hours of wasted material and machine time. There is no automated, intelligent watchdog that can interpret a webcam feed and issue a pause or cancel command in real time. OrcaSlicer and PrusaSlicer have no built-in failure inference — they only read sensor values, not geometry.",
+      "target_user": "Small-batch manufacturing shops and prosumer makers running unattended overnight prints on FDM printers (Bambu Lab, Prusa MK4, Creality K2).",
+      "current_workaround": "Operators check webcam streams manually via OctoEverywhere or Bambu Cloud app, or rely on Obico (formerly The Spaghetti Detective) which uses a narrow CNN that generates high false-positive rates and requires a paid subscription for fast polling.",
+      "why_now": "Multimodal LLMs (GPT-4o, Claude 3.5 Sonnet) can now process a 720p webcam frame and return a structured failure assessment in under 2 seconds via API. Camera hardware is already present on most modern printers. The cost per inference is ~$0.003, which is cheaper than 1 gram of filament wasted.",
+      "success_metrics": [
+        "Failure detection latency under 90 seconds from onset",
+        "False positive rate below 5% over 500 monitored print-hours",
+        "Material waste reduction measurable per operator per month (grams)",
+        "Time-to-pause under 10 seconds after detection confirmation"
+      ],
+      "data_signals": [
+        "Obico public dataset of labeled spaghetti failure images",
+        "Reddit r/3Dprinting monthly threads on failed prints with timestamps",
+        "Bambu Lab community forum failure reports with filament cost estimates",
+        "OctoEverywhere plugin telemetry (failure events vs. print hours)"
+      ],
+      "severity": "high",
+      "notes": "This is a solved problem in industrial CNC (machine vision + PLC), but the maker/prosumer market has no affordable, accurate equivalent. The LLM angle is defensible because failure morphology varies too widely for a fixed CNN trained on limited data. Key risk: latency and API cost at scale."
+    },
+    {
+      "title": "G-code Generation from Natural Language Is Unreliable and Unsafe",
+      "problem_statement": "Engineers and makers want to describe a print job in plain English — material, temperature constraints, part geometry goals — and receive ready-to-run G-code. Current LLM outputs hallucinate invalid G-code sequences, incorrect temperature values, or missing bed-leveling routines. Running hallucinated G-code risks nozzle crashes, thermal runaway, or bed damage. There is no validation layer between LLM output and printer execution.",
+      "target_user": "Mechanical engineers at hardware startups who are not G-code experts but need to iterate on functional prototypes quickly without a dedicated CAM operator.",
+      "current_workaround": "Engineers hand-edit slicer profiles manually, or hire a technician to validate G-code before each run. Some use ChatGPT to generate snippets then spend 30-60 minutes manually verifying safety parameters.",
+      "why_now": "LLMs are already being used ad-hoc for G-code generation (evidenced by GitHub Copilot issues and GPT forum posts). The gap is a structured validation pipeline — not the generation itself. Slicer APIs (PrusaSlicer CLI, Bambu Studio CLI) now expose programmatic access, making automated round-trip validation feasible.",
+      "success_metrics": [
+        "Zero unsafe G-code commands (e.g., temperatures above material spec) reaching the printer",
+        "Time from design intent description to validated G-code under 5 minutes",
+        "Reduction in technician review hours per prototype sprint",
+        "Iteration cycle time (design change to first layer) cut by 50%"
+      ],
+      "data_signals": [
+        "GitHub issues on LLM-assisted G-code tools (search: 'gcode llm hallucination')",
+        "Hardware startup Slack communities reporting CAM bottlenecks",
+        "Slicer CLI documentation showing programmatic validation endpoints",
+        "Stack Overflow questions on G-code safety validation"
+      ],
+      "severity": "high",
+      "notes": "Safety is the moat here, not generation. Any product that ships G-code to a printer without a deterministic validator is a liability. Validation must be rule-based (temperature bounds, axis limits, feed rate caps), not LLM-based. LLM handles intent parsing; rules handle safety enforcement."
+    },
+    {
+      "title": "Support Structure Placement Requires Expert Judgment That Most Users Lack",
+      "problem_statement": "Deciding where to place supports, which support type to use, and how dense to make them requires understanding of material properties, overhang angles, and part geometry — knowledge most hobbyists and junior engineers do not have. Bad support placement causes print failures (60+ degree unsupported overhangs), surface defects on cosmetic faces, and wasted removal time. Slicers auto-generate supports using geometric heuristics that ignore design intent.",
+      "target_user": "Product designers at consumer goods companies printing functional prototypes in PETG or ABS, and hobbyists printing complex organic models (miniatures, cosplay props).",
+      "current_workaround": "Trial-and-error over multiple failed prints (2-5 attempts average for complex geometry). Posting to Reddit or Discord for community feedback, which takes 6-24 hours. Hiring a 3D printing service bureau adds cost and 3-5 day turnaround.",
+      "why_now": "Multimodal LLMs can analyze STL thumbnails or sliced layer previews and reason about overhang risk. APIs for programmatic slicer control now allow injecting support modifiers into print profiles. The combination enables a feedback loop that did not exist 18 months ago.",
+      "success_metrics": [
+        "First-attempt print success rate increase from baseline (measurable per user session)",
+        "Support material consumption reduction (grams per part)",
+        "Post-processing time reduction for support removal (minutes per part)",
+        "User-reported surface quality score improvement on cosmetic faces"
+      ],
+      "data_signals": [
+        "Thingiverse and Printables remix data showing how many users re-orient or re-support existing models",
+        "r/3Dprinting posts tagged 'support help' — volume and recurrence",
+        "Service bureau rejection rates for unprintable files",
+        "Bambu Lab AMS filament usage logs showing support vs. model material ratio"
+      ],
+      "severity": "medium",
+      "notes": "The problem is real but the solution boundary is fuzzy. Must avoid building a 'smarter auto-support' feature that slicers will ship in 6 months. The defensible angle is design-intent-aware placement — understanding that the user wants a specific face to be cosmetic — not just geometry-based heuristics."
+    },
+    {
+      "title": "Printer Maintenance Intervals Are Guessed, Not Data-Driven",
+      "problem_statement": "3D printers accumulate wear on nozzles, PTFE tubes, extruder gears, and bed springs over thousands of print-hours. Operators have no system for tracking maintenance state — they replace parts reactively after failures (clogs, under-extrusion, stringing) rather than proactively. Each reactive failure wastes a full print job plus diagnosis time (30-120 minutes). Industrial print farms running 20+ printers have no affordable predictive maintenance tooling.",
+      "target_user": "Print farm operators running 5-50 FDM printers for small-batch production (phone cases, jigs, custom parts). Also relevant to makerspaces with shared machines.",
+      "current_workaround": "Sticky notes or spreadsheets tracking approximate last-clean date. Some use OctoPrint plugins that log print hours but provide no failure-risk inference. Most operators rely on feel and experience.",
+      "why_now": "Modern printers (Bambu X1C, Prusa XL) now expose structured telemetry via API or MQTT: print hours, material type, temperature cycles, retraction counts. An LLM can correlate this telemetry with maintenance manuals and community failure reports to produce a prioritized maintenance schedule — something no current tool does.",
+      "success_metrics": [
+        "Reduction in unplanned downtime hours per printer per month",
+        "Maintenance action taken before failure (proactive rate as % of total maintenance events)",
+        "Cost of reactive repairs vs. proactive parts replacement per quarter",
+        "Mean time between failures (MTBF) improvement over 90-day baseline"
+      ],
+      "data_signals": [
+        "Bambu Cloud API telemetry fields (publicly documented)",
+        "OctoPrint plugin download stats for maintenance-related plugins",
+        "Print farm operator forums (Hive3D, Printfarm Discord) discussing downtime costs",
+        "Amazon/AliExpress nozzle replacement purchase frequency in maker communities"
+      ],
+      "severity": "high",
+      "notes": "This is a classic IoT predictive maintenance problem. The LLM's role is narrow: correlating unstructured maintenance manuals and community knowledge with structured telemetry to generate ranked alerts. Do not over-engineer — a rules engine with LLM-assisted threshold calibration is sufficient and more defensible than a pure LLM approach."
+    },
+    {
+      "title": "Slicer Profile Selection for New Materials Is a Time-Consuming Expert Task",
+      "problem_statement": "When a maker or engineer introduces a new filament brand or material variant (e.g., carbon-fiber-filled nylon, flexible TPU 85A), they must manually tune 15-30 slicer parameters — temperature, speed, cooling, retraction, flow rate — through iterative test prints. Each test print takes 20-90 minutes. A full calibration campaign for a new material takes 4-10 hours of machine time and wastes 50-200g of expensive filament ($2-15). There is no tool that interprets a material datasheet and produces a starting slicer profile.",
+      "target_user": "R&D engineers at manufacturing companies evaluating new materials for production suitability, and advanced hobbyists experimenting with specialty filaments (high-temp, conductive, composite).",
+      "current_workaround": "Searching Reddit, YouTube, and Facebook groups for community profiles. Downloading unverified profiles from Printables or Bambu Wiki that may not match their specific printer hardware. Running manual calibration prints (temperature tower, retraction test, flow rate cube) in sequence.",
+      "why_now": "Material datasheets are structured PDFs with defined fields (glass transition temp, recommended print temp range, moisture sensitivity). LLMs can parse these and map values to slicer parameter ranges. Bambu Studio and OrcaSlicer now support importable JSON profiles, making the output format machine-actionable.",
+      "success_metrics": [
+        "Time to first acceptable test print reduced from 4-10 hours to under 2 hours",
+        "Filament waste per new material qualification reduced by 50% (grams)",
+        "Profile parameter accuracy vs. community-verified baseline (deviation score)",
+        "Number of calibration iterations before production-ready profile achieved"
+      ],
+      "data_signals": [
+        "Printables and MakerWorld profile download counts for specialty materials",
+        "Reddit threads asking for profile help for specific filament brands (high volume, recurring)",
+        "Filament manufacturer support ticket volume for slicer settings questions",
+        "Bambu Lab forum posts on new material calibration failures"
+      ],
+      "severity": "medium",
+      "notes": "The output must be a JSON slicer profile, not prose advice. If the product only generates text recommendations, it is a chatbot, not a tool. The datasheet-to-profile mapping is finite and auditable — this is a strong fit for an LLM with structured output constraints. Key competitor risk: Bambu Lab is already building material profiles into their ecosystem."
+    },
+    {
+      "title": "Post-Print Quality Inspection Is Visual and Entirely Manual",
+      "problem_statement": "After a print completes, operators visually inspect parts for defects: layer gaps, warping, stringing, dimensional inaccuracy, surface roughness. This inspection is subjective, inconsistent across operators, and not logged. For production runs of 50-500 identical parts, inspection becomes a bottleneck — a single operator can inspect 30-60 parts per hour. Rejected parts are identified too late to adjust the print job, wasting the entire batch.",
+      "target_user": "Small manufacturing shops and print farms producing functional parts for end-use (medical device enclosures, aerospace brackets, automotive clips) where dimensional tolerance and surface quality matter.",
+      "current_workaround": "Manual visual inspection with calipers for critical dimensions. Some shops use basic USB microscopes. High-end shops invest in CMM (coordinate measuring machines) at $15,000-$100,000 — cost-prohibitive for SMBs. No affordable automated solution exists between 'eyeball' and 'CMM'.",
+      "why_now": "Smartphone cameras now reach 12MP+ with macro capability. Multimodal LLMs can classify visible defects in a part photo against a reference image in under 3 seconds for $0.004 per call. A structured inspection log with defect categories and confidence scores is now achievable for under $50/month for a 500-part weekly production run.",
+      "success_metrics": [
+        "Inspection throughput increase (parts per operator-hour)",
+        "Defect detection rate vs. human inspector baseline (recall and precision)",
+        "Batch rejection rate caught before full run completes (early abort rate)",
+        "Cost per quality-controlled part vs. current manual process"
+      ],
+      "data_signals": [
+        "Manufacturing Slack and LinkedIn groups discussing inspection bottlenecks",
+        "Upwork/Fiverr job postings for '3D print quality control' tasks",
+        "Print farm operator reports on rework and scrap rates",
+        "ISO 9001 audit findings for additive manufacturing shops (public case studies)"
+      ],
+      "severity": "high",
+      "notes": "This is a real computer vision problem with an LLM wrapper for defect classification and report generation. Must define defect taxonomy upfront — the product is useless if it says 'possible issue detected' without a specific category. Dimensional accuracy requires a reference object in frame (coin, ruler) for scale — purely subjective visual inspection is not enough for tolerance-critical parts."
+    },
+    {
+      "title": "Multi-Printer Job Scheduling Across a Print Farm Is Done in Spreadsheets",
+      "problem_statement": "Print farm operators managing 10-50 printers allocate jobs manually: they decide which printer runs which file, estimate completion times from memory, and track queue state in Google Sheets or whiteboards. When a printer fails mid-job or a rush order arrives, rebalancing the queue requires manual recalculation. Operators report spending 1-2 hours per day on scheduling tasks that do not add value. Idle printer time due to poor scheduling is estimated at 10-20% of available capacity.",
+      "target_user": "Print farm operators running 10-50 FDM or SLA printers for e-commerce fulfillment (custom gifts, spare parts, consumer goods). Revenue directly tied to printer utilization.",
+      "current_workaround": "Google Sheets with manual job entry and estimated durations. Some use Obico or Repetier Server for basic queue management but without intelligent scheduling or re-optimization. Operators use phone alarms to know when printers finish.",
+      "why_now": "Printer APIs (Bambu MQTT, OctoPrint REST, Moonraker for Klipper) now expose real-time status, job completion estimates, and error states. LLMs can act as a planning layer that interprets natural-language rush orders ('I need 20 of model X by Friday 5pm') and generates an optimized job allocation across available printers — something rule-based schedulers cannot handle for dynamic constraint sets.",
+      "success_metrics": [
+        "Printer utilization rate improvement (% of available hours with active jobs)",
+        "Scheduling decision time reduction (minutes per day spent on allocation)",
+        "On-time order fulfillment rate for rush orders",
+        "Idle time between jobs per printer per day (minutes)"
+      ],
+      "data_signals": [
+        "Printfarm Discord and Hive3D forum posts about scheduling pain",
+        "Obico and Repetier Server feature request boards (scheduling, queue management)",
+        "Etsy/Shopify seller forums for custom 3D print sellers discussing fulfillment bottlenecks",
+        "OctoPrint plugin download stats for queue management plugins"
+      ],
+      "severity": "medium",
+      "notes": "The LLM's role here is constraint-aware planning, not just chat. Must output a machine-actionable schedule (printer ID, file path, start time, priority), not prose. The real risk is that this becomes a features arms race with Bambu Cloud or Formlabs Dashboard. The moat is the natural-language intake for dynamic re-scheduling — that is the only part incumbents do not have."
+    }
+  ]
+}

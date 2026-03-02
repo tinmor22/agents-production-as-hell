@@ -1,0 +1,128 @@
+{
+  "design": {
+    "brief_description": "CueCoach is a real-time filler word detection iOS app. On-device VAD and rule-based ASR detect filler words (um, uh, like, you know, so, basically) within 200ms and fire a single haptic or audio cue via Bluetooth earbuds. No backend at MVP. Local session logs drive a progress chart. Paywall after 3 free sessions via Apple IAP.",
+    "goal": "Ship a TestFlight build in 14 days that detects filler words in real time on-device, cues the user via their existing Bluetooth earbuds, persists session history locally, and gates unlimited use behind a $9/month or $49 lifetime Apple IAP purchase.",
+    "diagrams": {
+      "context": "C4Context\n    title CueCoach - System Context\n    Person(user, \"Job Seeker\", \"Mid-career engineer or analyst, 25-38, prepping for FAANG/IB interviews\")\n    System(cuecoach, \"CueCoach iOS App\", \"On-device filler word detection + haptic cue + session log\")\n    System_Ext(apns, \"Apple IAP\", \"StoreKit 2 - handles $9/month and $49 lifetime purchases\")\n    System_Ext(testflight, \"TestFlight\", \"Beta distribution\")\n    System_Ext(bt_earbuds, \"Bluetooth Earbuds\", \"AirPods, Beats, any A2DP device - receives audio cue\")\n    Rel(user, cuecoach, \"Speaks into mic, receives haptic/audio cue\")\n    Rel(cuecoach, bt_earbuds, \"Fires short audio tone via AVAudioSession\")\n    Rel(cuecoach, apns, \"Validates purchase, unlocks unlimited sessions\")\n    Rel(testflight, cuecoach, \"Distributes beta build\")",
+      "components": "C4Component\n    title CueCoach - Component View (iOS App)\n    Container_Boundary(app, \"CueCoach iOS App\") {\n        Component(mic, \"MicCaptureEngine\", \"AVAudioEngine\", \"Captures 16kHz mono PCM from device microphone\")\n        Component(vad, \"VADProcessor\", \"WebRTC VAD / energy threshold\", \"Segments audio into speech/silence frames at 20ms windows\")\n        Component(filler, \"FillerDetector\", \"SFSpeechRecognizer (on-device) + regex rule engine\", \"Transcribes speech frame, matches filler word patterns, emits FillerEvent\")\n        Component(cue, \"CueEmitter\", \"AVAudioPlayerNode + CoreHaptics\", \"Fires short beep to Bluetooth output or haptic on device on FillerEvent\")\n        Component(session, \"SessionManager\", \"Swift struct + Combine\", \"Tracks filler count, filler/min, duration for current session\")\n        Component(store, \"SessionStore\", \"UserDefaults + Codable\", \"Persists last N sessions as JSON blobs, max 100 sessions\")\n        Component(chart, \"ProgressChartView\", \"SwiftUI Charts\", \"Renders filler rate across last 10 sessions\")\n        Component(paywall, \"PaywallGate\", \"StoreKit 2\", \"Reads free session count from SessionStore, presents paywall after 3, validates IAP receipt\")\n        Component(ui, \"SessionView + HomeView\", \"SwiftUI\", \"Single permission screen, live filler counter, start/stop session\")\n    }\n    Rel(mic, vad, \"PCM frames\")\n    Rel(vad, filler, \"Speech frames\")\n    Rel(filler, cue, \"FillerEvent\")\n    Rel(filler, session, \"FillerEvent\")\n    Rel(session, store, \"SessionResult on stop\")\n    Rel(store, chart, \"Last 10 SessionResults\")\n    Rel(store, paywall, \"Free session count\")\n    Rel(paywall, ui, \"Unlocked / Paywalled state\")",
+      "sequences": [
+        {
+          "name": "Happy Path: User Completes a Session",
+          "diagram": "sequenceDiagram\n    participant U as User\n    participant UI as SessionView\n    participant PG as PaywallGate\n    participant SS as SessionStore\n    participant MC as MicCaptureEngine\n    participant VP as VADProcessor\n    participant FD as FillerDetector\n    participant CE as CueEmitter\n    participant SM as SessionManager\n\n    U->>UI: Tap Start Session\n    UI->>PG: checkCanStartSession()\n    PG->>SS: freeSessionsUsed()\n    SS-->>PG: count < 3 (or purchased)\n    PG-->>UI: .allowed\n    UI->>MC: startCapture()\n    MC->>VP: PCM frames (20ms)\n    loop Every speech frame\n        VP->>FD: speechFrame\n        FD->>FD: SFSpeechRecognizer partial result\n        FD->>FD: regex match [um|uh|like|you know|so|basically]\n        alt Filler detected\n            FD->>CE: FillerEvent(word: \"um\", timestamp)\n            CE->>U: haptic + short audio tone via BT earbuds\n            FD->>SM: recordFiller(FillerEvent)\n        end\n    end\n    U->>UI: Tap Stop Session\n    UI->>MC: stopCapture()\n    UI->>SM: finalizeSession()\n    SM-->>UI: SessionResult(fillerCount, fillerPerMin, duration)\n    UI->>SS: persist(SessionResult)\n    SS->>SS: increment freeSessionsUsed if not purchased\n    UI->>U: Show session summary screen"
+        },
+        {
+          "name": "Paywall Trigger After 3rd Free Session",
+          "diagram": "sequenceDiagram\n    participant U as User\n    participant UI as HomeView\n    participant PG as PaywallGate\n    participant SS as SessionStore\n    participant SK as StoreKit 2\n\n    U->>UI: Tap Start Session\n    UI->>PG: checkCanStartSession()\n    PG->>SS: freeSessionsUsed()\n    SS-->>PG: count == 3\n    PG-->>UI: .paywalled\n    UI->>U: Present PaywallSheet ($9/mo or $49 lifetime)\n    U->>UI: Tap Subscribe $9/month\n    UI->>SK: purchase(monthlyProduct)\n    SK-->>UI: .success(Transaction)\n    UI->>SS: markPurchased()\n    UI->>PG: checkCanStartSession()\n    PG-->>UI: .allowed\n    UI->>U: Dismiss paywall, session starts"
+        },
+        {
+          "name": "Filler Detection Latency Critical Path",
+          "diagram": "sequenceDiagram\n    participant Mic as Microphone\n    participant AE as AVAudioEngine tap\n    participant VP as VADProcessor\n    participant SR as SFSpeechRecognizer (on-device)\n    participant RX as Regex Rule Engine\n    participant CE as CueEmitter\n\n    Note over Mic,CE: Target: < 200ms end-to-end\n    Mic->>AE: PCM buffer (20ms = 320 samples @ 16kHz)\n    AE->>VP: energy check (~1ms)\n    VP-->>VP: speech frame confirmed\n    VP->>SR: append buffer to recognition request\n    SR-->>RX: partial transcription (~80-150ms on-device)\n    RX->>RX: regex scan for filler tokens (~1ms)\n    RX->>CE: FillerEvent\n    CE->>Mic: audio tone fired to BT output (~5ms)\n    Note over Mic,CE: Total p95 budget: 200ms"
+        },
+        {
+          "name": "Progress Chart Load",
+          "diagram": "sequenceDiagram\n    participant U as User\n    participant UI as ProgressView\n    participant SS as SessionStore\n    participant CV as ProgressChartView\n\n    U->>UI: Navigate to Progress tab\n    UI->>SS: fetchLastNSessions(10)\n    SS-->>UI: [SessionResult] sorted by date desc\n    UI->>CV: render(sessions)\n    CV->>U: Line chart: filler/min over last 10 sessions\n    Note over CV: Zero-state shown if sessions < 2"
+        }
+      ]
+    },
+    "architecture": {
+      "components": [
+        "MicCaptureEngine: AVAudioEngine installTap on inputNode, 16kHz mono, 20ms buffer. Owns the AVAudioSession category (.record, .playAndRecord with BT output). Publishes PCM buffers via Combine PassthroughSubject.",
+        "VADProcessor: Energy-threshold gate. Drops silence frames before hitting SFSpeechRecognizer. Reduces unnecessary recognition calls. Configurable silence threshold (default -50dBFS). Emits speechFrame events only.",
+        "FillerDetector: Wraps SFSpeechRecognizer in streaming mode with on-device (no network) constraint. On each partial result, runs regex: /\\b(um|uh|like|you know|so|basically)\\b/i. Deduplicates rapid repeats with 300ms cooldown per filler event to avoid double-firing on the same utterance. Publishes FillerEvent(word, confidence, timestamp).",
+        "CueEmitter: Subscribes to FillerEvent. Plays a pre-loaded short .wav tone (200ms, 440Hz sine) via AVAudioPlayerNode routed to current audio output (BT earbuds if connected, else internal speaker as fallback). CoreHaptics fires UIImpactFeedbackGenerator(.medium) simultaneously for non-BT fallback.",
+        "SessionManager: Observable Swift class. Tracks fillerCount, sessionDuration via Timer, computes fillerPerMin = fillerCount / (duration / 60). Publishes live state to SessionView. On stop, produces immutable SessionResult value type.",
+        "SessionStore: Thin wrapper over UserDefaults. Stores [SessionResult] as Codable JSON. Max 100 sessions (FIFO eviction). Also stores freeSessionsUsed: Int and isPurchased: Bool. All reads/writes on main thread (UserDefaults is not thread-safe for custom types).",
+        "PaywallGate: Pure function on top of SessionStore. canStartSession() -> SessionAccess enum (.allowed, .paywalled). Owns StoreKit 2 product fetch and purchase flow. Writes isPurchased to SessionStore on verified transaction.",
+        "ProgressChartView: SwiftUI view using Swift Charts framework (iOS 16+). X-axis: session date. Y-axis: filler/min. Line chart with point markers. Zero-state: 'Complete 2 sessions to see your trend.'",
+        "HomeView + SessionView: SwiftUI. HomeView: Start button, free sessions remaining badge, progress nav link. SessionView: live filler count, session timer, word breakdown, stop button. Single permission screen (AVAudioApplication.requestRecordPermission) shown inline on first Start tap.",
+        "AppState: @Observable singleton injected via environment. Owns SessionManager, SessionStore, PaywallGate. Source of truth for session lifecycle."
+      ],
+      "flows": [
+        "Audio capture flow: AVAudioEngine tap -> VADProcessor energy gate -> SFSpeechRecognizer partial result -> FillerDetector regex match -> FillerEvent published",
+        "Cue flow: FillerEvent -> CueEmitter -> AVAudioPlayerNode (BT or speaker) + UIImpactFeedbackGenerator",
+        "Session persistence flow: User taps stop -> SessionManager.finalizeSession() -> SessionStore.append(SessionResult) -> SessionStore increments freeSessionsUsed if not purchased",
+        "Paywall flow: HomeView taps start -> PaywallGate.canStartSession() -> if .paywalled present PaywallSheet -> StoreKit 2 purchase -> SessionStore.markPurchased() -> session starts",
+        "Progress chart flow: User opens Progress tab -> SessionStore.fetchLastN(10) -> ProgressChartView renders filler/min line chart",
+        "Permission flow: First start tap -> AVAudioApplication.requestRecordPermission -> granted: session starts / denied: show settings deep-link banner"
+      ]
+    },
+    "api_design": [
+      {
+        "endpoint": "Local: SessionStore.fetchLastNSessions(_:)",
+        "method": "GET",
+        "request": { "n": "Int — number of sessions to fetch, default 10" },
+        "response": { "sessions": "[SessionResult] sorted by startedAt descending" },
+        "notes": "No network API at MVP. All data lives in UserDefaults. This is an internal Swift method, not an HTTP endpoint. Listed here to define the contract."
+      },
+      {
+        "endpoint": "Local: PaywallGate.canStartSession()",
+        "method": "GET",
+        "request": {},
+        "response": { "access": "SessionAccess enum: .allowed | .paywalled" },
+        "notes": "Pure computation over SessionStore state. No network call. Fast enough to call on every Start tap."
+      },
+      {
+        "endpoint": "Local: PaywallGate.purchase(product:)",
+        "method": "POST",
+        "request": { "product": "Product — StoreKit 2 Product, either monthlySubscription or lifetimeLicense" },
+        "response": { "result": "PurchaseResult enum: .success | .userCancelled | .pending | .error(Error)" },
+        "notes": "Wraps StoreKit 2 product.purchase(). On .success, calls SessionStore.markPurchased(). Handles pending state for Ask to Buy gracefully."
+      },
+      {
+        "endpoint": "Local: FillerDetector.startDetection(audioEngine:)",
+        "method": "POST",
+        "request": { "audioEngine": "AVAudioEngine — shared engine instance from MicCaptureEngine" },
+        "response": { "publisher": "AnyPublisher<FillerEvent, Never>" },
+        "notes": "Returns a Combine publisher. Caller subscribes to receive FillerEvent values. Detection stops when audioEngine stops. No error type — errors are logged silently at MVP to avoid interrupting session."
+      },
+      {
+        "endpoint": "StoreKit 2: Products fetch",
+        "method": "GET",
+        "request": { "identifiers": ["com.cuecoach.monthly", "com.cuecoach.lifetime"] },
+        "response": { "products": "[Product]" },
+        "notes": "Called once on app launch via Product.products(for:). Results cached in PaywallGate. Product IDs must be configured in App Store Connect before TestFlight submission."
+      }
+    ],
+    "data_model": [
+      "SessionResult: { id: UUID, startedAt: Date, duration: TimeInterval (seconds), fillerCount: Int, fillerPerMin: Double, fillerBreakdown: [String: Int] (word -> count), deviceModel: String } — Codable, stored as JSON in UserDefaults array",
+      "FillerEvent: { word: String, timestamp: Date, sessionID: UUID } — in-memory only, not persisted",
+      "AppSettings: { freeSessionsUsed: Int, isPurchased: Bool, purchasedProductID: String?, purchasedAt: Date? } — stored as separate UserDefaults keys, not a Codable struct (avoids migration risk at MVP)",
+      "SessionAccess: enum { case allowed, case paywalled } — computed, not stored",
+      "CueConfig: { fillerWords: [String], cueVolume: Float (0.0-1.0), debounceDurationMs: Int (default 300), vadThresholdDBFS: Float (default -50.0) } — hardcoded constants at MVP, no user-facing settings screen",
+      "UserDefaults key namespace: 'cc.' prefix on all keys (cc.sessions, cc.freeSessionsUsed, cc.isPurchased, cc.purchasedProductID, cc.purchasedAt)"
+    ],
+    "open_questions": [
+      "SFSpeechRecognizer partial result latency on iPhone 12 (A14) in offline mode: needs profiling. If p95 exceeds 150ms, fallback to a custom Viterbi phoneme matcher for the 6 filler words only (much smaller model, faster). Must benchmark before day 3.",
+      "Deduplication window for filler events: 300ms cooldown is a guess. 'Um um um' spoken rapidly should fire 3 times or 1 time? Behavior needs to be defined and tested with real speech before ship.",
+      "AVAudioSession routing when BT earbuds disconnect mid-session: does the session crash or silently fall back to speaker? Must handle AVAudioSessionRouteChangeNotification and re-route without stopping capture.",
+      "SFSpeechRecognizer requires a usage description in Info.plist (NSSpeechRecognitionUsageDescription) in addition to microphone permission. Some testers may be confused by the two-permission prompt. Should we batch these on first launch?",
+      "Apple IAP review timeline: $49 lifetime in-app purchase requires App Store Connect setup and Apple review of the subscription terms. This needs to be configured by day 1 of development, not day 13.",
+      "False positive rate target is under 5% — but 5% of what denominator? Per filler word fired? Per minute of speech? Needs a precise definition before it can be measured. Recommend: false positives per 100 speech-seconds.",
+      "UserDefaults as session store: 100 sessions at ~500 bytes each = 50KB, well within limits. But UserDefaults is not encrypted. Session data (filler counts, timestamps) is low sensitivity, but worth noting for privacy policy.",
+      "Weekly progress email in the $9/month tier is listed in monetization but marked non-goal in MVP. Sending email requires a backend (even minimal). This is explicitly out of scope at MVP — do not implement.",
+      "What happens when the user backgrounds the app mid-session? AVAudioEngine stops capturing in background by default without a background mode entitlement. Must add Audio background mode entitlement and handle interruptions (phone calls, Siri).",
+      "Locale handling: SFSpeechRecognizer locale defaults to device locale. Filler words like 'um' and 'uh' are English-specific. Non-English device locales will produce incorrect transcriptions. Add a hardcoded en-US locale override at MVP."
+    ],
+    "metrics": {
+      "business": [
+        "Weekly active users who complete at least 2 sessions in a 7-day window (north star — measures habit formation)",
+        "Activation rate: percentage of installs that complete first full session with at least 1 filler cue fired within 24 hours",
+        "Week 1 to Week 2 session retention: target 40% of users who session in week 1 also session in week 2",
+        "Free-to-paid conversion rate: percentage of users who hit the 3-session paywall and complete a purchase",
+        "MRR from $9/month subscriptions",
+        "Lifetime license units sold per week",
+        "Affiliate referral conversions (resume coach + career influencer channel)"
+      ],
+      "technical": [
+        "Filler detection end-to-end latency p50 and p95 (target p95 < 200ms) — measured via os_signpost in Instruments during local profiling",
+        "False positive rate: false filler events per 100 speech-seconds (target < 5%)",
+        "False negative rate: missed filler words per 100 actual fillers (secondary quality signal, no hard target at MVP)",
+        "App crash-free session rate (target > 99%) — measured via Xcode Organizer crash logs from TestFlight",
+        "Bluetooth cue latency: time from FillerEvent to audio tone audible in AirPods Pro (target < 200ms)",
+        "SFSpeechRecognizer recognition request failure rate per session (target < 1%)",
+        "AVAudioSession route change recovery rate: percentage of mid-session BT disconnects that recover without session termination",
+        "Cold app launch to session-ready time (target < 2 seconds on iPhone 12)"
+      ]
+    }
+  }
+}

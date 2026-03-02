@@ -1,0 +1,92 @@
+{
+  "solution_options": [
+    {
+      "option_name": "CueCoach: Real-Time Interview Earpiece",
+      "approach": "A phone-in-pocket app paired with any Bluetooth earbud that runs on-device VAD and rule-based filler word detection (no LLM required) to deliver a single-click haptic/audio cue the moment a filler fires. Positioned as the only interview prep tool that changes behavior during the rep, not after. No hardware to buy, no glasses required. Works during mock interviews with a human partner or with an AI interviewer inside the app. Distribution through r/cscareerquestions, Blind, and a $0 referral deal with resume coaches who can bundle it as an add-on. The product is purposely single-metric: filler word frequency only at launch. No talk-time, no hedging analysis — those are v2. The core loop is: speak, hear click, self-correct, log improvement. Weekly progress emails showing filler rate chart become the retention hook.",
+      "key_features": [
+        "On-device ASR with filler word detection under 200ms latency (no cloud required)",
+        "Single Bluetooth cue: one short click per filler event, configurable intensity",
+        "Session log: filler count per minute, chart over sessions",
+        "AI interviewer mode: app plays STAR-method question prompts and listens",
+        "Weekly improvement email with filler rate trend line",
+        "No account required for first 3 sessions (reduces signup friction)"
+      ],
+      "why_it_wins": "Filler detection is the sharpest, most measurable behavioral problem in the input set. Rule-based ASR post-processing means no LLM cost, no cloud latency, and no privacy concern. The target user is already spending $200-800 on coaching and is actively interviewing, meaning payment intent is proven and urgency is high. Yoodli exists but is post-session only — this is a direct wedge into their gap. The metric (filler count) is unambiguous, motivating, and logs itself. No hardware dependency means day-1 distribution with zero manufacturing risk.",
+      "main_risks": [
+        "ASR accuracy degrades on accents and low-end phone microphones, causing false positives that erode trust",
+        "Users plateau quickly — once filler rate drops, they churn before they pay for v2 features",
+        "Yoodli adds real-time mode with their $13M war chest and kills the wedge",
+        "Mock interview alone doesn't transfer to live interview — users blame product, not practice gap"
+      ],
+      "mvp_cut": [
+        "Cut AI interviewer mode — use a partner or recorded prompts",
+        "Cut hedging and inflection analysis entirely",
+        "Cut account system — local-only storage for first version",
+        "Cut Android — iOS only to limit ASR library surface area",
+        "Cut onboarding flow beyond one permission screen"
+      ],
+      "pricing_angle": "$9/month or $49 lifetime. No free tier with features — free tier is 3 sessions only, then hard gate. Resume coaches get a $10/referral affiliate link. No enterprise tier at launch."
+    },
+    {
+      "option_name": "MirrorLoop: Conversation Balance Coach for ADHD/ASD Adults",
+      "approach": "An iOS app that uses the phone microphone plus any earbud to run speaker diarization in real time, tracking the user's talk-time percentage and interruptions per minute. When talk-time crosses 65% of any rolling 5-minute window, a gentle haptic pattern fires. When an interruption is detected, a different single vibration fires. The app is not a general wellness tool — it is positioned as a clinical adjunct, sold into the therapy channel. The go-to-market is B2B2C: license the app to ADHD coaches and social skills therapists who assign it as homework between sessions. Therapist dashboard shows session logs. This removes the cold-start trust problem and plugs into existing therapy billing structures. The product explicitly does not record conversations — it processes audio in real time and discards it, which is the only way to pass a therapist ethics review.",
+      "key_features": [
+        "On-device speaker diarization: user voice vs others voice, no cloud upload",
+        "Talk-time percentage widget updated every 30 seconds",
+        "Interrupt detection: speech onset within 500ms of another speaker's pause",
+        "Configurable haptic patterns: one for talk-time, one for interrupt (distinguishable by rhythm)",
+        "Session summary: talk%, interrupts, questions asked (yes/no pattern detection)",
+        "Therapist dashboard (web): view client session logs week over week",
+        "Zero audio storage: process and discard, shown explicitly in privacy UI"
+      ],
+      "why_it_wins": "The therapy channel self-selects for users who already believe they have the problem (high conversion), have a trusted authority (therapist) recommending the tool (low skepticism), and are in an active behavior change context (high engagement). No cold acquisition cost per user. The ADHD/ASD adult population is large, underserved by real-time tools, and has a demonstrated willingness to pay for anything that closes the feedback loop therapists describe. On-device-only processing is a genuine privacy moat vs any cloud competitor.",
+      "main_risks": [
+        "Therapist channel sales cycles are slow — 6-12 months to critical mass without a champion network",
+        "Speaker diarization on phone mic in noisy environments (bars, restaurants) has high error rates, undermining trust in the core metric",
+        "Users may game the system or become hyper-vigilant about the cue rather than internalizing the skill",
+        "HIPAA-adjacent positioning creates legal review burden even for B2C if marketed as clinical"
+      ],
+      "mvp_cut": [
+        "Cut therapist dashboard entirely — email PDF summary to therapist manually for v1",
+        "Cut question-asking detection — talk-time and interrupt only at launch",
+        "Cut Android — iOS only",
+        "Cut any onboarding beyond microphone permission and earbud pairing check",
+        "Cut real-time widget — end-of-session summary only to reduce complexity"
+      ],
+      "pricing_angle": "Therapist pays $49/month for up to 10 client licenses (B2B2C model). Client pays nothing directly. Therapist bundles it into session fee or uses it as a practice differentiator. Direct B2C fallback at $12/month for self-directed users who find it organically."
+    },
+    {
+      "option_name": "StandupMirror: Manager Talk-Time Awareness for 1:1s",
+      "approach": "A dead-simple macOS/iOS app that sits in the background during any meeting — phone on the desk, laptop mic open — and tracks the manager's voice share versus all others combined. At end of meeting, a card appears: You spoke 68% of the time. Target is under 40%. No in-session cues — this is intentional. The in-session cue for a manager in front of their team is socially impossible to use discreetly. Instead, the feedback lands immediately post-meeting while context is fresh, paired with one actionable prompt (next time: ask a question before offering an opinion). The product is positioned as a leadership tool, not a surveillance tool. Distribution through executive coaches and ICF-certified coaches who use it as a between-session accountability mechanism. The coach assigns it, reviews the weekly trend with the client, and the product earns its keep inside the coaching engagement.",
+      "key_features": [
+        "One-tap meeting start, automatic end detection via silence threshold",
+        "Speaker diarization: manager voice vs room, no individual identification of others",
+        "Post-meeting card: talk% with context (1:1 vs group), trend vs prior 10 sessions",
+        "One coaching prompt per session end, pulled from a fixed library of 30",
+        "Weekly email to the manager: talk% trend chart, no commentary",
+        "Optional: share report link with executive coach (read-only URL, expires in 7 days)",
+        "Zero audio stored: process in real time, discard raw audio immediately"
+      ],
+      "why_it_wins": "The post-session timing is counterintuitively correct — in-session cues are not viable for a manager in a power position without a discreet wearable. Post-meeting feedback while context is vivid is the next-best intervention. The ICF coach channel mirrors the therapist channel for MirrorLoop but with faster deal cycles (coaches are entrepreneurs, not clinicians). The product promise is concrete: one number, one benchmark, one prompt. No complexity to explain. Managers who receive 360 feedback citing listening deficits are already psychologically primed to buy — they just need a measurable tool their coach can reference.",
+      "main_risks": [
+        "Post-session feedback is still delayed relative to the behavior — in-session cue is the real prize, making this a stepping stone not a final product",
+        "Manager must remember to start the app before every meeting — compliance friction is high without always-on wearable",
+        "Coach channel requires individual coach activation, which doesn't scale without a marketplace or partnership program",
+        "Talk-time % as the only metric is easy to game by talking slower, not by actually listening better"
+      ],
+      "mvp_cut": [
+        "Cut coaching prompt library — one static prompt for v1 ('Ask one question before sharing your opinion')",
+        "Cut coach sharing feature — manager emails themselves the PDF",
+        "Cut macOS app — iOS only, phone on desk",
+        "Cut onboarding beyond microphone permission",
+        "Cut trend chart — single session card only at launch"
+      ],
+      "pricing_angle": "$15/month individual. Executive coach gets 20 client licenses at $200/month flat (scales their practice). No per-seat enterprise pricing — keeps sales cycle fast. Free 14-day trial, no credit card required."
+    }
+  ],
+  "shortlist": [
+    "CueCoach: Real-Time Interview Earpiece — highest severity problem, sharpest measurable metric, no hardware dependency, proven willingness to pay, clear wedge against Yoodli. Build this first.",
+    "MirrorLoop: Conversation Balance Coach for ADHD/ASD Adults — second priority because therapist channel provides acquisition leverage and the ADHD population is large and underserved. Harder channel to crack but higher LTV and lower churn once embedded in a therapy workflow.",
+    "StandupMirror: Manager Talk-Time Awareness for 1:1s — valid but the post-session timing is a structural compromise. Build this only if a wearable hardware partner (Ray-Ban Meta API, Humane, or similar) becomes available to enable true in-session discretion. Do not build as a standalone product without that hardware layer."
+  ]
+}

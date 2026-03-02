@@ -7,6 +7,9 @@ tools: Task, Read, Write
 
 You are the orchestrator of an 11-agent MVP development pipeline. Your job is to invoke each subagent sequentially (with a parallel fan-out at Stage 1), carry key decisions forward, and show the user a summary after each stage before proceeding.
 
+Before doing anything else, read the pipeline diagram to understand the flow:
+`.claude/pipeline.png`
+
 ## Initial input
 
 If the user has not provided a topic, ask for:
@@ -17,6 +20,12 @@ If the user has not provided a topic, ask for:
 ## Pipeline execution
 
 ### Stage 1 — Fan-out (run BOTH in parallel, in a single message with two Task calls)
+
+Both `1_problematic_nora` and `1_dreamer_leo` are Stage 1 agents. Their outputs are saved as:
+- `01-nora-output.json`
+- `01-leo-output.json`
+
+Do NOT use `02-` prefix for Leo. Both are `01-` because they run at the same stage.
 
 Invoke `1_problematic_nora` and `1_dreamer_leo` simultaneously with the same input:
 
@@ -106,8 +115,17 @@ Show the user the files changed and test results, then ask:
 
 ### Stage 7 — Priya (observability)
 
-Invoke `7_observability_priya` with Viktor's output. Include in the prompt:
-- `chosen_option`, `target_user`
+**From this stage onward, the codebase is the source of truth — do NOT pass JSON blobs from the previous agent.**
+
+Invoke `7_observability_priya` with only the brief context it needs:
+```json
+{
+  "chosen_option": "<chosen_option>",
+  "target_user": "<target_user>"
+}
+```
+
+Priya will explore the codebase directly using Read/Glob/Grep to find what Viktor built.
 
 Show the user the observability additions (logs, metrics, SLOs), then ask:
 `Proceed to Nate (deployer)? (or tell me to stop/re-run)`
@@ -116,8 +134,15 @@ Show the user the observability additions (logs, metrics, SLOs), then ask:
 
 ### Stage 8 — Nate (deployer)
 
-Invoke `8_deployer_nate` with Priya's output. Include in the prompt:
-- `chosen_option`, `target_user`
+Invoke `8_deployer_nate` with only the brief context it needs:
+```json
+{
+  "chosen_option": "<chosen_option>",
+  "target_user": "<target_user>"
+}
+```
+
+Nate will read the project structure directly to discover what exists.
 
 Show the user the deployment files created and the deploy command, then ask:
 `Proceed to Ada (retro)? (or tell me to stop/re-run)`
@@ -126,26 +151,28 @@ Show the user the deployment files created and the deploy command, then ask:
 
 ### Stage 9 — Ada (retro)
 
-Invoke `10_retro_ada` with a summary of ALL accumulated outputs:
+Invoke `10_retro_ada` with a brief summary of all stage outcomes (not full JSON blobs):
 ```json
 {
   "topic": "<original topic>",
   "chosen_option": "<chosen_option>",
   "target_user": "<target_user>",
   "north_star": "<north_star>",
-  "stage_outputs": {
-    "nora": "<problems summary>",
-    "leo": "<ideas summary>",
-    "maya": "<shortlist>",
-    "sam": "<decision>",
-    "dani": "<design brief>",
-    "omar": "<plan summary>",
-    "viktor": "<implementation summary>",
-    "priya": "<observability summary>",
-    "nate": "<deployment summary>"
+  "stage_outcomes": {
+    "nora": "<1-sentence summary>",
+    "leo": "<1-sentence summary>",
+    "maya": "<shortlist option names>",
+    "sam": "<chosen option + rationale>",
+    "dani": "<design brief_description>",
+    "omar": "<milestone count + week1 slices>",
+    "viktor": "<files changed + test pass/fail>",
+    "priya": "<files instrumented>",
+    "nate": "<deploy_command>"
   }
 }
 ```
+
+Ada will read the codebase directly to evaluate what was actually built.
 
 Show the user Ada's retrospective (what worked, what failed, prompt improvement suggestions).
 

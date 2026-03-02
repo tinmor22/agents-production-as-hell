@@ -1,0 +1,76 @@
+{
+  "decision": {
+    "chosen_option": "CueCoach: Real-Time Interview Earpiece",
+    "rationale": "Filler word detection is a sharp, single-dimensional behavioral problem with a measurable ground truth. On-device rule-based ASR eliminates LLM cost and cloud latency, keeping gross margins above 85%. The target user is already spending $200-800 on interview coaching — payment intent is proven, not hypothetical. Yoodli is the closest competitor but operates post-session only, which is a structural gap: feedback delivered after the fact does not rewire behavior during the rep. Real-time haptic cue during practice closes that gap with no new hardware requirement. The 14-day solo ship constraint is met: on-device VAD + filler detection + session log is achievable without a backend. MirrorLoop is viable but therapist channel sales cycles run 6-12 months — too slow for signal. StandupMirror's post-session timing is a core structural compromise, not a feature gap. CueCoach ships fastest, charges soonest, and produces the clearest behavioral outcome.",
+    "non_goals": [
+      "AI interviewer mode at MVP",
+      "Hedging or confidence tone analysis",
+      "Account system or cloud sync",
+      "Android support",
+      "Multi-language ASR",
+      "Talk-time or question pacing metrics",
+      "Coach or employer dashboard",
+      "Group or team features",
+      "Any audio storage or upload",
+      "Onboarding flow beyond single permission screen"
+    ],
+    "target_user": "Mid-career software engineer or finance analyst, age 25-38, preparing for FAANG or investment bank interviews, spending money on LeetCode premium and resume coaches, aware they have a filler word problem but has no real-time feedback tool today.",
+    "positioning": "The only interview prep tool that corrects your filler words in the moment, not after. One click per filler. Works with any Bluetooth earbud you already own."
+  },
+  "monetization": {
+    "model": "hybrid",
+    "price_points": [
+      "Free: 3 sessions lifetime, no account required",
+      "$9/month recurring: unlimited sessions, weekly progress email",
+      "$49 one-time lifetime: unlimited sessions, no subscription",
+      "$10 per referred paying user: affiliate payout to resume coaches and career influencers"
+    ],
+    "why_people_pay": "Users are already paying $200-800 for interview coaching and failing interviews that cost them $30k-$100k in annual comp. $9/month is a rounding error against that stakes. The free tier creates behavioral proof in 3 sessions — if filler rate drops visibly, conversion is mechanical. Resume coaches pay nothing; they earn $10/referral, so they become free sales reps. Lifetime at $49 captures one-time buyers and reduces churn risk."
+  },
+  "metrics": {
+    "north_star": "Weekly active users who complete at least 2 sessions in a 7-day window (measures habit formation, not just install)",
+    "activation": "User completes first full session with at least 1 filler cue fired within 24 hours of install",
+    "retention": "Percentage of users who complete a session in week 2 after completing one in week 1 (target: 40% at 30 days)",
+    "revenue": "Monthly recurring revenue from paid subscribers; secondary: lifetime license units sold per week",
+    "ops": [
+      "Filler detection latency p95 under 200ms on iPhone 12 or newer",
+      "False positive rate on filler detection under 5% (measured on internal test corpus)",
+      "App crash-free session rate above 99%",
+      "Weekly progress email open rate above 30%",
+      "Affiliate referral conversion rate (clicks to paid) above 8%"
+    ]
+  },
+  "mvp_definition": {
+    "must_have": [
+      "On-device VAD and rule-based filler word detection (um, uh, like, you know, so, basically) with under 200ms latency",
+      "Single Bluetooth haptic/audio cue fired per filler event",
+      "Session log: filler count, filler per minute, session duration",
+      "Chart of filler rate across last 10 sessions visible in app",
+      "3-session free tier enforced by local storage, no account required",
+      "Paywall after session 3 with $9/month and $49 lifetime options",
+      "iOS only, iPhone 12 or newer, iOS 16+",
+      "Single microphone permission screen as entire onboarding",
+      "Weekly progress email (manual send via Mailchimp for first 100 users, then automated)"
+    ],
+    "nice_later": [
+      "AI interviewer mode with question prompts",
+      "Hedging and confidence tone detection",
+      "Account system and cloud sync",
+      "Android port",
+      "Coach sharing or referral dashboard",
+      "Talk-time percentage tracking",
+      "Accent-adaptive ASR model",
+      "Apple Watch haptic companion",
+      "Structured interview question bank by role/company"
+    ],
+    "ship_criteria": [
+      "Filler detection fires correctly on 10 manually recorded test phrases with no missed detections and under 3 false positives",
+      "Bluetooth cue latency under 200ms measured on AirPods Pro on iPhone 14",
+      "Session log persists across app restarts",
+      "Paywall blocks session 4 and accepts payment via Apple In-App Purchase",
+      "At least 5 non-developer users complete a session and report the cue fired when expected",
+      "App passes App Store review and is live on TestFlight",
+      "Weekly email sent to at least 1 real user with filler rate chart"
+    ]
+  }
+}

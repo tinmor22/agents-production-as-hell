@@ -1,0 +1,109 @@
+{
+  "ideas": [
+    {
+      "title": "Failure Whisperer",
+      "one_liner": "An LLM that watches your live print via webcam and predicts layer failures 10-30 minutes before they happen, letting you kill the job before wasting material.",
+      "target_user": "Makers and small-batch manufacturers running FDM printers overnight who currently lose 15-40% of prints to mid-job failures they only discover in the morning.",
+      "core_mechanism": "A vision-capable LLM receives periodic webcam snapshots plus the current G-code layer number. It compares visual state against expected geometry from the sliced model and flags deviations — warping corners, spaghetti onset, layer shift — before they compound into total failure. On detection above a confidence threshold it sends OctoPrint a cancel command.",
+      "contrarian_twist": "Everyone else trains custom CV models on millions of print images. This uses a general-purpose vision LLM with a plain-language description of what the model is supposed to look like, written by the user in 2 sentences. No dataset, no training, no GPU infra.",
+      "hypothesis": "A vision LLM given a text description of the target print can detect the 5 most common failure modes (warping, spaghetti, layer shift, under-extrusion, detachment) with >70% precision at the snapshot taken 10 layers before human-visible total failure.",
+      "fast_validation": [
+        "Collect 50 video clips of failed prints from the Printwatch or Obico open datasets — each labeled with the frame where failure starts.",
+        "Sample frames at T-10, T-5, T-2 layers before labeled failure onset.",
+        "Prompt a vision LLM with 'This print should look like a flat rectangular base. Describe any anomalies.' and score whether it names the failure type.",
+        "Measure precision/recall vs the ground-truth label. If >70% precision at T-10, the core mechanism is viable."
+      ],
+      "mvp_scope": "OctoPrint plugin: every 2 minutes, grab a MJPEG frame, POST it plus user's text description to a local claude CLI call, parse the response for a CANCEL signal, and call OctoPrint API if triggered. Single Python file, no training, ships in a weekend."
+    },
+    {
+      "title": "G-code Translator",
+      "one_liner": "Paste a broken or unknown G-code file into a chat interface and get back a plain-English explanation of what it does, what machine it was written for, and what will break if you run it on yours.",
+      "target_user": "Engineers at contract manufacturing shops who receive customer-supplied G-code for printers they do not own and need to validate it before running a $200 job that could wreck a nozzle.",
+      "core_mechanism": "The LLM ingests the full G-code file, identifies the dialect (Marlin, Klipper, RepRap, Bambu), maps non-standard commands to their effects, and outputs a structured diff: 'Your printer does not support M207 firmware retraction — here is the equivalent manual retraction G-code substitution.' It also flags temperature commands outside safe ranges for common materials.",
+      "contrarian_twist": "G-code has been around since 1960. There is no sexy ML angle here. The contrarian bet is that a general LLM already knows every G-code dialect better than any specialized parser, and wrapping it in a $0 CLI tool beats every paid G-code validator on the market.",
+      "hypothesis": "An LLM can correctly identify the printer dialect and flag machine-incompatible commands with <5% false negative rate on a test set of 100 real-world G-code files sourced from Printables and Thingiverse.",
+      "fast_validation": [
+        "Download 100 G-code files from Printables, each tagged with target printer model.",
+        "Run each through the LLM prompt: 'What printer dialect is this? List every command that would fail on an Ender 3 Pro running Marlin 2.1.'",
+        "Manually verify the dialect identification and spot-check 20 flagged commands against Marlin 2.1 firmware docs.",
+        "If dialect ID is correct in >90% of cases and flagged commands check out, the tool is trustworthy enough to sell."
+      ],
+      "mvp_scope": "A single Go binary (fits this repo's stack) that reads a G-code file path as argument, pipes it to claude CLI with a structured prompt, and prints a JSON report with fields: dialect, flagged_commands, suggested_substitutions, temperature_warnings. No UI needed for v1."
+    },
+    {
+      "title": "Parametric Brief-to-STL",
+      "one_liner": "Describe a mechanical part in plain English and get back an OpenSCAD script, a render preview, and a slicer-ready STL — without touching CAD software.",
+      "target_user": "Hardware startup founders and product engineers who need 5-10 custom brackets, clips, or enclosures per week but do not have a CAD engineer on staff and find Fusion 360 a 2-hour detour for a 5-minute part.",
+      "core_mechanism": "The LLM converts a natural language description into valid, parametric OpenSCAD code. OpenSCAD is then invoked as a CLI subprocess to render the STL and a PNG preview. The user sees the preview and can iterate with follow-up prompts like 'add 2mm fillet to all interior edges.' Each iteration re-invokes OpenSCAD. No browser, no cloud, runs entirely local.",
+      "contrarian_twist": "Everyone chases AI-native 3D modeling with neural implicit surfaces and diffusion models. This uses a 40-year-old text-based CAD language as the intermediate representation, which means the LLM output is fully inspectable, editable, and versionable. The 'dumb' choice is actually the robust choice.",
+      "hypothesis": "An LLM can generate OpenSCAD code that compiles without error and produces a geometrically correct part matching the verbal spec for >60% of common mechanical primitives (brackets, standoffs, enclosure walls, snap-fit clips) on the first attempt.",
+      "fast_validation": [
+        "Write 30 plain-English part descriptions of increasing complexity, from 'a 20x20x3mm plate with four M3 holes at the corners' to 'a snap-fit lid for a 60x40x25mm box with 2mm wall thickness.'",
+        "Prompt the LLM to output OpenSCAD code only, no explanation.",
+        "Run each output through `openscad --export-format stl` and count compilation errors vs successes.",
+        "For successes, visually inspect the PNG preview against the spec. Track first-attempt accuracy rate."
+      ],
+      "mvp_scope": "CLI tool: takes a text prompt, calls claude CLI, writes the OpenSCAD output to a temp file, runs `openscad -o output.stl -o preview.png` as subprocess, opens preview.png in the default image viewer. Interactive loop for refinements. 200 lines of Go, no external dependencies beyond openscad binary."
+    },
+    {
+      "title": "Print Farm Dispatcher",
+      "one_liner": "A queue manager for multi-printer farms that uses an LLM to assign jobs to machines based on material loaded, nozzle size, current job time remaining, and job deadline — without writing scheduling rules by hand.",
+      "target_user": "Print farm operators running 10-100 FDM printers who currently manage job assignment in a spreadsheet or in their heads, leading to wrong-material prints and missed customer deadlines.",
+      "core_mechanism": "Farm state (each printer's current material, nozzle diameter, time remaining, temperature, last maintenance date) is serialized into a JSON context. Pending jobs (STL, required material, nozzle, deadline, priority) are appended. The LLM reasons over the context and outputs an assignment plan as JSON: {job_id, printer_id, estimated_start, estimated_end}. The system writes the plan to OctoPrint or Bambu Cloud queue via API.",
+      "contrarian_twist": "Every print farm tool tries to build a deterministic scheduling algorithm. This outsources the combinatorial reasoning to an LLM, which means it can handle soft constraints like 'prefer to batch PETG jobs on the same printer to avoid purge waste' expressed in plain English, not code.",
+      "hypothesis": "LLM-generated job assignments will reduce material waste from wrong-material prints by >50% and reduce deadline misses by >30% compared to manual assignment in a simulated 20-printer, 50-job scenario.",
+      "fast_validation": [
+        "Create a simulated farm state JSON with 20 printers and 50 jobs with randomized deadlines and material requirements.",
+        "Run the LLM dispatcher prompt 10 times and parse the output assignments.",
+        "Score each run: count wrong-material assignments (job requires PLA, assigned to printer loaded with PETG) and count jobs whose estimated_end exceeds their deadline.",
+        "Compare against a naive round-robin baseline. If LLM beats baseline by >30% on both metrics, the mechanism is real."
+      ],
+      "mvp_scope": "Go CLI that reads a farm_state.json and jobs.json, calls claude CLI with both as context, parses the JSON assignment plan from the response, and writes assignments.json. No OctoPrint integration in v1 — just validate the planning logic before building the API bridge."
+    },
+    {
+      "title": "Material Passport Generator",
+      "one_liner": "Feed in a filament brand, color, and print settings and get back a machine-readable material passport: actual mechanical property estimates, storage requirements, and compatibility warnings for downstream processes like painting, bonding, or electroplating.",
+      "target_user": "Product engineers at companies that print functional prototypes and hand them off to finishing teams who have no idea what the material actually is or how to treat it, causing adhesion failures, solvent damage, and rework.",
+      "core_mechanism": "The LLM is prompted with filament brand + color + print temperature + layer height and synthesizes a structured data card by drawing on its training knowledge of material datasheets, community print profiles, and chemistry. Output is a JSON passport with fields: base_polymer, glass_transition_temp, chemical_resistance (list of solvents rated safe/unsafe), paint_primer_recommendation, bonding_surface_prep, recyclability_code. The passport travels with the physical part.",
+      "contrarian_twist": "Material passports exist in injection molding and aerospace. Nobody has applied the concept to FDM prints, which are made of the same base polymers. The insight is that the LLM already contains most of the datasheet knowledge — it just needs to be structured and made exportable.",
+      "hypothesis": "LLM-generated material passports for 20 common filament brands will match manufacturer datasheet values for glass transition temperature within +/-5C and correctly classify solvent compatibility (safe/unsafe) with >85% accuracy against published chemical resistance charts.",
+      "fast_validation": [
+        "Pick 20 filament SKUs from popular brands (Prusament, Hatchbox, eSun, Bambu) with publicly available datasheets.",
+        "Prompt the LLM to generate the passport JSON for each.",
+        "Compare LLM's Tg estimates against datasheet Tg values — calculate mean absolute error.",
+        "Cross-reference 5 solvent compatibility claims per passport against published chemical resistance tables. Score accuracy."
+      ],
+      "mvp_scope": "CLI that takes filament_brand, filament_material, print_temp as flags, calls claude CLI, outputs a passport.json and a human-readable passport.txt. Optionally embeds the passport as a QR code printed onto a label that ships with the part. QR generation is a single Go library call."
+    },
+    {
+      "title": "Post-Mortem Debugger",
+      "one_liner": "Upload a photo of your failed print and the original STL, and get back a structured root cause analysis with specific slicer setting changes to fix it on the next run.",
+      "target_user": "Engineers and serious hobbyists who fail the same print 2-3 times because they cannot diagnose whether the problem is slicer settings, filament, temperature, or bed adhesion — and do not want to watch a 45-minute YouTube troubleshooting video.",
+      "core_mechanism": "A vision LLM receives: (1) a photo of the failed part, (2) the original STL filename and dimensions, (3) the slicer profile used (layer height, speed, temp, supports, infill). It outputs a structured JSON diagnosis: {failure_mode, probable_cause, confidence, slicer_changes: [{parameter, old_value, new_value, reason}], non_slicer_fixes: [string]}. The diagnosis is falsifiable — the user tries the fix and reports back.",
+      "contrarian_twist": "3D printing forums are full of humans doing exactly this analysis from photos. The LLM is not smarter than an expert — it is just available at 2am, never tired, and outputs structured JSON that can directly patch a slicer profile file instead of leaving the user to manually hunt through 400 settings.",
+      "hypothesis": "A vision LLM given a failure photo plus slicer profile will recommend at least one correct slicer setting change (validated by user re-print success) in >65% of cases across the 8 most common FDM failure modes.",
+      "fast_validation": [
+        "Recruit 20 makers from a Discord or Reddit community who have a recent failed print, its photo, and the slicer profile.",
+        "Run the LLM diagnosis on each case without showing it to the user first.",
+        "Have the user implement the top recommended setting change and re-print.",
+        "Track: did the re-print succeed? Was the failure mode correctly identified? Report success rate after 20 cases."
+      ],
+      "mvp_scope": "Shell script wrapper: takes a JPEG path and a Cura or PrusaSlicer .ini profile path as arguments, constructs the prompt, calls claude CLI with vision, parses the JSON diagnosis, and prints it formatted to stdout. Can be wired into a Telegram bot in one afternoon so users just send a photo."
+    },
+    {
+      "title": "Regulatory Print Certifier",
+      "one_liner": "For businesses printing functional parts, an LLM-assisted checklist that maps your part's use case, material, and print settings to the specific IEC, FDA, UL, or RoHS clause that governs it — before you ship it to a customer.",
+      "target_user": "Small contract manufacturers and hardware startups that 3D print functional components (food contact, medical adjacent, electrical enclosures) and have no regulatory affairs staff, meaning they are one customer complaint away from a liability event.",
+      "core_mechanism": "User inputs: part use case (food contact / electrical enclosure / structural load-bearing / skin contact), material (PLA / PETG / ABS / ASA / PA / PEEK), country of sale, and printing method (FDM / SLA / SLS). The LLM maps this to a structured checklist: applicable standards, mandatory tests, self-certification possibilities vs lab certification requirements, and red-flag material-use combinations (e.g., PLA for food contact at >60C is a failure mode). Output is a PDF-ready checklist with clause citations.",
+      "contrarian_twist": "Regulatory consultants charge $300/hour for exactly this scoping work. An LLM can do the first 80% — identifying which standards apply and which tests are mandatory — in 30 seconds. The contrarian insight is that the valuable output is not legal advice, it is a prioritized to-do list that tells the engineer what to google next.",
+      "hypothesis": "LLM-generated regulatory checklists for 15 part-material-use-case combinations will correctly identify all applicable top-level standards (e.g., FDA 21 CFR 177 for food contact polymers) with zero false negatives, validated against a regulatory affairs consultant's review.",
+      "fast_validation": [
+        "Define 15 test scenarios: combinations of use case, material, and target market (US, EU, UK).",
+        "Generate the LLM checklist for each.",
+        "Have one regulatory affairs consultant (can be found on Upwork for a 2-hour review) check each checklist for missing mandatory standards.",
+        "If zero critical standards are missed across all 15 cases, the tool is defensible as a scoping aid. If misses exist, document them as known limitations and add a disclaimer."
+      ],
+      "mvp_scope": "Web form (single HTML page + Go backend) that collects the 4 inputs, calls claude CLI, and renders the checklist as HTML with a Print-to-PDF button. No database. Each checklist generation is stateless. Can be hosted as a single Go binary on a $5 VPS."
+    }
+  ]
+}

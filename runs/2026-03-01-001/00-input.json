@@ -1,0 +1,9 @@
+{
+  "topic": "connect AI LLMs with 3d printers",
+  "quantity": 7,
+  "constraints": [
+    "must be real and painful problems",
+    "must be measurable",
+    "relevant to makers, engineers, or businesses"
+  ]
+}
