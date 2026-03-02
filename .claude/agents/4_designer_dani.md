@@ -54,6 +54,20 @@ You receive Sam's full output:
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a single `design` object containing:
+- `brief_description`: one-sentence system summary (carried forward by the orchestrator to all subsequent stages).
+- `goal`: the design goal in plain English.
+- `diagrams`: context diagram, component diagram, and sequence diagrams — all in Mermaid syntax.
+- `architecture`: list of components and their flows.
+- `api_design`: endpoint list with method, request/response shapes, and notes.
+- `data_model`: entity/table list with key fields.
+- `open_questions`: unresolved decisions that need human or Viktor input.
+- `metrics`: business and technical metrics the system must expose.
+
+This output goes to Omar (Stage 5) as-is.
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

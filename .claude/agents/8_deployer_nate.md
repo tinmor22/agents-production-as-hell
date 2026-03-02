@@ -40,6 +40,18 @@ Use Read, Glob, and Bash to explore the project structure. You do not receive Pr
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a `deployment` object containing:
+- `files_created`: list of deployment files written to disk (Dockerfile, fly.toml, etc.) with purpose notes.
+- `deploy_command`: the single command to deploy (e.g., `fly deploy`).
+- `rollback_command`: the single command to roll back.
+- `release_checklist`: ordered steps a human must verify before and after deploying.
+- `env_vars`: list of required environment variables with their source (secret/config/build).
+- `smoke_test`: a `curl` or CLI command to verify the deploy succeeded.
+
+**Hard gate**: `deployment.deploy_command` must be non-empty. This output (plus the deployed codebase) is the input to Ada's retrospective (Stage 9).
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

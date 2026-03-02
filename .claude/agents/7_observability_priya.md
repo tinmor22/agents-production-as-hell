@@ -42,6 +42,16 @@ Use Read, Glob, and Grep to discover all relevant files. You do not receive Vikt
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return an `observability` object containing:
+- `files_changed`: list of files instrumented, each with path and a description of what was added (log lines, metrics, trace spans).
+- `sli_definitions`: named SLIs with formula and SLO target (e.g., "p95 latency < 200ms over 30d").
+- `dashboard_panels`: list of recommended Grafana/dashboard panel descriptions.
+- `alerts`: list of alert conditions with severity (low/medium/high/page).
+
+This output is consumed by Nate (Stage 8), who reads the codebase directly to determine what deployment infrastructure to create.
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

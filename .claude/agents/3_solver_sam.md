@@ -44,6 +44,17 @@ Use `shortlist` to know which options to evaluate, but read the full `solution_o
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a JSON object with four top-level blocks: `decision`, `monetization`, `metrics`, and `mvp_definition`.
+
+- `decision`: the chosen option, rationale, non-goals, target_user, and positioning.
+- `monetization`: model (subscription/usage/one_time/hybrid), price points, and why people pay.
+- `metrics`: north_star, activation, retention, revenue, and ops metrics.
+- `mvp_definition`: must-have features, nice-later features, and ship criteria.
+
+**Hard gate**: `decision.target_user` and `metrics.north_star` must be non-empty. This output goes to Dani (Stage 4).
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

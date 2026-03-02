@@ -52,6 +52,16 @@ You receive Dani's full output:
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a `plan` object containing:
+- `milestones`: ordered list of thin vertical slices, each with `slice_id`, `name`, `goal`, `tasks`, `definition_of_done`, and `estimated_hours`.
+- `risk_register`: known risks and mitigations.
+- `week1_slices`: list of `slice_id` values to ship in week 1.
+- `week2_slices`: list of `slice_id` values for week 2.
+
+**Hard gate**: `plan.milestones` must be non-empty. This output goes to Viktor (Stage 6), who picks a specific milestone to implement.
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

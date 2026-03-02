@@ -90,6 +90,12 @@ Your output is merged with Leo's output (Dreamer, agent 2) — you run in parall
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a JSON object with a `pipeline_ready` boolean and a `problems` array. Each problem includes a `title`, `problem_statement`, `target_user`, `current_workaround`, `why_now`, `success_metrics`, `data_signals`, `severity` (low/medium/high), `confidence` (0.0–1.0), `notes`, and an `evidence` block with `source_url` and `quote` from a real external source.
+
+`pipeline_ready` is set to `true` only if ALL problems score ≥ 0.7 confidence. This output is merged with Leo's `ideas` array and passed together to Maya (Stage 2).
+
 ## Output schema
 
 You MUST output valid JSON matching exactly this structure:

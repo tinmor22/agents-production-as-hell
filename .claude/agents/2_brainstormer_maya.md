@@ -33,6 +33,12 @@ Use `problems` as your reality anchor and `ideas` as your creative starting poin
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a JSON object with a `solution_options` array and a `shortlist`. Each option includes `option_name`, `approach`, `key_features`, `why_it_wins`, `main_risks`, `mvp_cut` (what to strip for speed), and `pricing_angle`. The `shortlist` names the top 2–3 options with a brief rationale for each.
+
+This output goes directly to Sam (Stage 3) as-is. Sam uses `shortlist` to pick one option and `solution_options` for the full details.
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

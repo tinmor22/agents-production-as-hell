@@ -41,6 +41,17 @@ Use Read and Glob to inspect the actual codebase output when evaluating what Vik
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return a `retro` object containing:
+- `what_worked`: list of things that produced real value — be specific, cite agent names and artifacts.
+- `what_failed`: list of failures, gaps, or wasted effort — no vague criticism, name the root cause.
+- `prompt_fixes`: concrete changes to make to specific agent prompts, each with the agent name, the change, and the reason.
+- `workflow_fixes`: changes to stage ordering, gates, or handoff contracts.
+- `new_agents_proposed`: agents that would reduce known failure modes — only propose if a real gap exists, with full input/output schemas.
+
+This output is the final artifact of the pipeline run. It is used to improve the agent system for the next run.
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 

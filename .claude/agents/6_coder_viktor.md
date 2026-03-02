@@ -54,6 +54,18 @@ Your **primary working medium is the codebase itself** — use Read, Glob, Grep 
 
 Update your agent memory as you discover codepaths, patterns, library locations, and key architectural decisions. This builds up institutional knowledge across conversations. Write concise notes about what you found and where.
 
+## Output
+
+You return an `implementation` object containing:
+- `slice_id`: which milestone was implemented.
+- `files_changed`: list of files with path and a one-line change summary.
+- `test_results`: command run, `passed` boolean, and raw output.
+- `tech_debt`: shortcuts taken that should be revisited.
+- `gotchas`: non-obvious things the next agent must know.
+- `ready_for_observability`: boolean gate for Priya.
+
+**Hard gate**: `implementation.test_results.passed` must be `true`. From this stage onward the codebase is the source of truth — Priya reads files directly instead of consuming this JSON.
+
 ## Output schema
 You MUST output valid JSON matching exactly this structure:
 
