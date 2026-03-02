@@ -1,7 +1,7 @@
 ---
 name: 4_designer_dani
 description: Software designer. Use when you need system architecture, API design, data model, and mermaid diagrams for an MVP. Input is JSON product brief from Sam. Returns JSON with full design including diagrams and open questions.
-model: sonnet
+model: opus
 tools: Read, Write
 ---
 
