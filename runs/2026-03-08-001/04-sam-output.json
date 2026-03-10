@@ -1,0 +1,39 @@
+{
+  "decision": {
+    "chosen_option": "StatCard CLI — Prompt-to-Card in 90 Seconds",
+    "rationale": "StatCard CLI wins on total score. Ships in 10 days with zero external infra — a binary that runs locally against API-Football. The 66% of LATAM football fans (14-49) consume creator analysis content weekly per the 2026 YouTube report, and zero existing CLI tools serve Spanish-speaking football creators who post 3-5 times per day.",
+    "non_goals": ["Web app or browser-based UI", "LLM-generated captions", "Team or multi-user account management", "Custom branded templates beyond creator watermark", "Real-time match data or live score integration", "Video or animated card output", "API-Football paid tier in v1", "Player photo fetching", "Anniversary or record-proximity alert engine", "Mobile app"],
+    "target_user": "Solo football content creator in Argentina, Mexico, or Colombia with 5k–200k followers on Twitter or Instagram who publishes 3–5 stats-based image posts per day and currently builds each card manually in Canva",
+    "positioning": "For solo LATAM football content creators who post daily stats cards, StatCard CLI is the command-line automation tool that compresses 60 minutes of manual research and design into a single Spanish-language prompt."
+  },
+  "monetization": {
+    "model": "hybrid",
+    "price_points": ["$0/month Free: 5 cards per day, 2 fixed templates, mandatory watermark", "$12/month Pro: 100 cards per day, 3 templates, custom watermark text, priority API-Football quota"],
+    "why_people_pay": "A creator posting 3 cards per day spends 3 hours daily on manual research and Canva work. At minimum wage in Mexico (~$14 USD/day), that labor costs more than a month of Pro in a single day."
+  },
+  "metrics": {
+    "north_star": "Cards generated per week across all active users — target: ≥ 150 cards/week by end of week 4 post-launch",
+    "activation": "First card successfully generated and saved to disk within 10 minutes of binary install — target: ≥ 65% of new users",
+    "retention": "Users who generate at least 3 cards in week 1 and return in week 3 — target: ≥ 35% of activated users",
+    "revenue": "Free-tier users who upgrade to Pro within 14 days — target: ≥ 6% of activated users",
+    "ops": ["p95 card generation latency < 90 seconds", "API-Football adapter error rate < 5%", "Zero panic-exits per release build on macOS and Linux amd64"]
+  },
+  "mvp_definition": {
+    "must_have": [
+      "Spanish-language CLI prompt parser that extracts two player or team names and an optional competition context",
+      "API-Football adapter that fetches head-to-head or season stats using the free tier",
+      "One hardcoded SVG card template rendered to PNG via a pure Go SVG-to-PNG pipeline (no Puppeteer)",
+      "Output in 1:1 (1080x1080px) and 4:5 (1080x1350px) formats saved to current working directory",
+      "Creator watermark text injected into card footer (configurable via --watermark flag)",
+      "Single static binary installable via curl-to-bash or direct download, no runtime dependencies",
+      "Daily card counter enforced locally (file-based counter in ~/.statcard/) to gate free tier at 5 cards/day"
+    ],
+    "nice_later": ["Second and third card templates", "Spanish NLP named-entity disambiguation", "Pro subscription payment flow", "Twitter/Instagram caption generator", "Telegram bot interface", "Team logo auto-fetching"],
+    "ship_criteria": [
+      "Running 'statcard generate \"Riquelme vs Zidane Champions League\"' on a clean macOS machine produces two PNG files in under 90 seconds",
+      "Generated PNG contains correct stat values from API-Football",
+      "Free-tier daily limit of 5 cards enforced",
+      "Binary runs on macOS arm64, macOS amd64, and Linux amd64"
+    ]
+  }
+}

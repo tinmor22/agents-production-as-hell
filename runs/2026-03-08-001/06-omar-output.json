@@ -1,0 +1,377 @@
+{
+  "design_context": {
+    "brief_description": "StatCard CLI: a single Go binary that takes a Spanish-language prompt, fetches football stats from API-Football, and renders a publication-ready PNG stat card in under 90 seconds.",
+    "goal": "Zero-dependency CLI that lets solo LATAM football content creators replace 60 minutes of manual Canva work with a single command.",
+    "tech_stack": {
+      "language": "Go 1.25+",
+      "storage": "Filesystem (~/.statcard/ for config, counters, cache)",
+      "key_libs": ["net/http", "encoding/json", "text/template", "image/png", "github.com/srwiley/oksvg", "github.com/srwiley/rasterx", "github.com/spf13/cobra", "golang.org/x/image/font/opentype", "embed"],
+      "excluded": ["Puppeteer", "Docker", "Any database", "Any web framework", "CGo-dependent libs", "LLM SDK"]
+    },
+    "components": [
+      { "name": "cmd/statcard", "responsibility": "CLI entrypoint. Cobra root + subcommands (init, generate, status).", "tech": "Go package main, cobra.Command" },
+      { "name": "internal/parser", "responsibility": "Extracts ParsedQuery from Spanish prompt via regexp.", "tech": "Go package parser" },
+      { "name": "internal/apifootball", "responsibility": "HTTP adapter for api-football.com v3 with filesystem cache.", "tech": "Go package apifootball" },
+      { "name": "internal/renderer", "responsibility": "SVG template interpolation + PNG rasterization via oksvg/rasterx.", "tech": "Go package renderer" },
+      { "name": "internal/meter", "responsibility": "Daily card counter at ~/.statcard/counter.json.", "tech": "Go package meter" },
+      { "name": "internal/config", "responsibility": "Config at ~/.statcard/config.json.", "tech": "Go package config" },
+      { "name": "templates/", "responsibility": "Embedded SVG templates + Inter font.", "tech": "Go embed.FS" }
+    ]
+  },
+  "codebase_blueprint": {
+    "module_name": "github.com/statcard/statcard",
+    "go_version": "1.25",
+    "packages": [
+      { "path": "cmd/statcard", "name": "main", "purpose": "CLI entrypoint, cobra commands, flag wiring" },
+      { "path": "internal/parser", "name": "parser", "purpose": "Spanish prompt parsing to ParsedQuery struct" },
+      { "path": "internal/apifootball", "name": "apifootball", "purpose": "API-Football HTTP adapter with cache" },
+      { "path": "internal/renderer", "name": "renderer", "purpose": "SVG-to-PNG card rendering" },
+      { "path": "internal/meter", "name": "meter", "purpose": "Daily usage counter" },
+      { "path": "internal/config", "name": "config", "purpose": "Persistent configuration" },
+      { "path": "internal/metrics", "name": "metrics", "purpose": "Append-only metrics log" },
+      { "path": "templates", "name": "templates", "purpose": "Embedded SVG card templates and font files" }
+    ],
+    "key_types": [
+      { "package": "internal/parser", "name": "ParsedQuery", "definition": "type ParsedQuery struct {\n  EntityA   string\n  EntityB   string\n  Context   string\n  QueryType string\n}" },
+      { "package": "internal/config", "name": "Config", "definition": "type Config struct {\n  APIKey     string `json:\"api_key\"`\n  Watermark  string `json:\"watermark\"`\n  Plan       string `json:\"plan\"`\n  DailyLimit int    `json:\"daily_limit\"`\n}" },
+      { "package": "internal/meter", "name": "DailyCounter", "definition": "type DailyCounter struct {\n  Date  string `json:\"date\"`\n  Count int    `json:\"count\"`\n}" },
+      { "package": "internal/apifootball", "name": "H2HStats", "definition": "type H2HStats struct {\n  PlayerA  PlayerResult\n  PlayerB  PlayerResult\n  Matches  int\n  WinsA    int\n  WinsB    int\n  Draws    int\n  GoalsA   int\n  GoalsB   int\n}" },
+      { "package": "internal/renderer", "name": "CardData", "definition": "type CardData struct {\n  Title       string\n  Subtitle    string\n  EntityA     EntityInfo\n  EntityB     EntityInfo\n  Stats       []StatRow\n  Watermark   string\n  GeneratedAt string\n}" }
+    ],
+    "entry_points": [
+      { "name": "statcard init", "package": "cmd/statcard", "description": "Initialize config with API key", "cobra_use": "init" },
+      { "name": "statcard generate", "package": "cmd/statcard", "description": "Generate PNG stat cards from Spanish prompt", "cobra_use": "\"<prompt>\"" },
+      { "name": "statcard status", "package": "cmd/statcard", "description": "Show daily usage and plan info", "cobra_use": "status" }
+    ],
+    "conventions": {
+      "error_wrapping": "fmt.Errorf(\"<context>: %w\", err)",
+      "test_style": "table-driven tests using []struct{ name, input, want }",
+      "function_max_lines": 40,
+      "no_global_state": "true — all state passed via struct or function args",
+      "cli_framework": "cobra"
+    }
+  },
+  "plan": {
+    "resolved_questions": [
+      { "question": "Should init guide API-Football signup?", "decision": "Print one-line URL to the API-Football RapidAPI page and prompt user to paste key. No browser automation." }
+    ],
+    "milestones": [
+      {
+        "slice_id": "m1-scaffold",
+        "name": "Project Scaffold + Module Init",
+        "goal": "Establish Go module, directory layout, embed wiring, cobra root so go build ./... and go test ./... pass.",
+        "components_touched": ["cmd/statcard", "templates/"],
+        "api_endpoints": [],
+        "data_entities": [],
+        "go_package_focus": ["cmd/statcard", "templates"],
+        "tasks": [
+          "Run `go mod init github.com/statcard/statcard` to create go.mod",
+          "Add cobra: `go get github.com/spf13/cobra@latest`",
+          "Create directories: cmd/statcard/, internal/parser/, internal/apifootball/, internal/renderer/, internal/meter/, internal/config/, internal/metrics/, templates/fonts/",
+          "Create cmd/statcard/main.go — cobra root command with version flag and placeholder subcommands (init, generate, status)",
+          "Create templates/embed.go — package templates, //go:embed *.svg fonts/*, var FS embed.FS",
+          "Add placeholder templates/card.svg with minimal valid SVG",
+          "Download Inter-Regular.ttf and Inter-Bold.ttf to templates/fonts/",
+          "Add golang.org/x/image: `go get golang.org/x/image@latest`",
+          "Add oksvg+rasterx: `go get github.com/srwiley/oksvg@latest github.com/srwiley/rasterx@latest`",
+          "Create cmd/statcard/main_test.go — smoke test --version exits 0"
+        ],
+        "definition_of_done": [
+          "go build ./... exits 0",
+          "go test ./... exits 0",
+          "./statcard --version prints version string",
+          "templates.FS.ReadFile('card.svg') returns non-empty bytes in test"
+        ],
+        "test_hints": [
+          "cmd/statcard/main_test.go: TestVersion — --version flag exits 0 and prints semver",
+          "templates/embed_test.go: TestEmbed_CardSVG — FS.ReadFile('card.svg') returns non-nil",
+          "templates/embed_test.go: TestEmbed_Font — FS.ReadFile('fonts/Inter-Regular.ttf') returns non-nil"
+        ],
+        "integration_notes": "",
+        "estimated_hours": 3
+      },
+      {
+        "slice_id": "m2-config",
+        "name": "Config + Init Subcommand",
+        "goal": "statcard init --api-key <key> persists config.json and statcard status reads it back.",
+        "components_touched": ["cmd/statcard", "internal/config"],
+        "api_endpoints": ["statcard init", "statcard status"],
+        "data_entities": ["Config"],
+        "go_package_focus": ["internal/config", "cmd/statcard"],
+        "tasks": [
+          "Create internal/config/config.go — Config struct with APIKey, Watermark, Plan, DailyLimit",
+          "Implement config.Load() (*Config, error) — reads ~/.statcard/config.json; ErrNotConfigured if missing",
+          "Implement config.Save(c *Config) error — marshals to ~/.statcard/config.json, os.MkdirAll 0700",
+          "Implement config.DefaultPath() string — filepath.Join(os.UserHomeDir(), '.statcard', 'config.json')",
+          "Wire statcard init cobra subcommand — --api-key required, --watermark optional, call config.Save",
+          "Wire statcard status cobra subcommand — call config.Load, print plan and limit",
+          "Create internal/config/config_test.go — Load missing file, Save+Load round-trip, DailyLimit defaults to 5"
+        ],
+        "definition_of_done": [
+          "go test ./internal/config/... passes",
+          "./statcard init --api-key testkey123 creates ~/.statcard/config.json",
+          "./statcard status prints 'free' plan and '5'",
+          "./statcard status before init exits non-zero"
+        ],
+        "test_hints": [
+          "internal/config/config_test.go: TestLoad_Missing — returns ErrNotConfigured",
+          "internal/config/config_test.go: TestSaveLoad_RoundTrip — Save then Load returns identical Config",
+          "internal/config/config_test.go: TestDailyLimit_Default — DailyLimit=5 when zero-value"
+        ],
+        "integration_notes": "Import internal/config in cmd/statcard/main.go. config.Load() called at root PersistentPreRunE.",
+        "estimated_hours": 3
+      },
+      {
+        "slice_id": "m3-meter",
+        "name": "Daily Usage Meter",
+        "goal": "meter.Check enforces 5-card/day limit, resetting at midnight, testable in isolation.",
+        "components_touched": ["internal/meter"],
+        "api_endpoints": [],
+        "data_entities": ["DailyCounter"],
+        "go_package_focus": ["internal/meter"],
+        "tasks": [
+          "Create internal/meter/meter.go — DailyCounter struct {Date string, Count int}",
+          "Implement meter.Load() (*DailyCounter, error) — reads ~/.statcard/counter.json; fresh counter if missing",
+          "Implement meter.Save(dc *DailyCounter) error — writes ~/.statcard/counter.json",
+          "Implement meter.Check(dc *DailyCounter, limit int) error — ErrDailyLimitReached if count>=limit; reset if date changed",
+          "Implement meter.Increment(dc *DailyCounter) — bumps Count by 1",
+          "Create internal/meter/meter_test.go — 4 test cases: allow <limit, block ==limit, reset on date change, Increment round-trip"
+        ],
+        "definition_of_done": [
+          "go test ./internal/meter/... passes all 4 cases",
+          "Check(count=4, limit=5) returns nil",
+          "Check(count=5, limit=5) returns ErrDailyLimitReached",
+          "Check with yesterday's date and count=5 resets to 0 and returns nil"
+        ],
+        "test_hints": [
+          "internal/meter/meter_test.go: TestCheck_Allow — count=4 limit=5 → nil",
+          "internal/meter/meter_test.go: TestCheck_Block — count=5 limit=5 → ErrDailyLimitReached",
+          "internal/meter/meter_test.go: TestCheck_DateReset — yesterday date count=99 → resets to 0, nil",
+          "internal/meter/meter_test.go: TestIncrement_RoundTrip — Increment Save Load → count=1"
+        ],
+        "integration_notes": "Import internal/meter in cmd/statcard. meter.Load+meter.Check called before parser.Parse in generate RunE.",
+        "estimated_hours": 2
+      },
+      {
+        "slice_id": "m4-parser",
+        "name": "Spanish Prompt Parser",
+        "goal": "parser.Parse converts Spanish free-form prompt to typed ParsedQuery; testable against real creator inputs.",
+        "components_touched": ["internal/parser"],
+        "api_endpoints": [],
+        "data_entities": ["ParsedQuery"],
+        "go_package_focus": ["internal/parser"],
+        "tasks": [
+          "Create internal/parser/parser.go — ParsedQuery struct {EntityA, EntityB, Context, QueryType string}",
+          "Define constants: QueryTypeH2HPlayers, QueryTypeH2HTeams, QueryTypeUnknown",
+          "Implement parser.Parse(prompt string) (ParsedQuery, error) — regexp finds vs/VS/contra/Contra separator",
+          "Extract EntityA before separator, EntityB between separator and 'en', Context after 'en'",
+          "Return error in Spanish if no separator: 'no se encontró comparación — usá vs o contra entre los dos nombres'",
+          "Strip punctuation and extra whitespace from EntityA and EntityB",
+          "Create internal/parser/parser_test.go — 6 test cases including accented chars and separator variants"
+        ],
+        "definition_of_done": [
+          "go test ./internal/parser/... passes all 6 cases",
+          "Parse('Messi vs Cristiano') → EntityA='Messi', EntityB='Cristiano', Context=''",
+          "Parse('messi contra mbappé en Champions League') → EntityA='messi', EntityB='mbappé', Context='Champions League'",
+          "Parse('solo messi') → non-nil error with Spanish message",
+          "Parse('') → non-nil error"
+        ],
+        "test_hints": [
+          "internal/parser/parser_test.go: TestParse_VSseparator — 'Messi vs Cristiano' → correct fields",
+          "internal/parser/parser_test.go: TestParse_ContraSeparator — 'messi contra mbappé en Champions League' → correct fields",
+          "internal/parser/parser_test.go: TestParse_NoSeparator — 'solo messi' → error",
+          "internal/parser/parser_test.go: TestParse_Empty — '' → error",
+          "internal/parser/parser_test.go: TestParse_ExtraSpaces — 'Messi  vs  Cristiano' → trimmed names",
+          "internal/parser/parser_test.go: TestParse_AccentedChars — 'mbappé' and 'López' preserved correctly"
+        ],
+        "integration_notes": "Import internal/parser in cmd/statcard. parser.Parse called after meter.Check in generate RunE.",
+        "estimated_hours": 3
+      },
+      {
+        "slice_id": "m5-apifootball",
+        "name": "API-Football HTTP Adapter",
+        "goal": "apifootball package fetches real player and H2H data with filesystem cache; tests run without live API calls.",
+        "components_touched": ["internal/apifootball"],
+        "api_endpoints": [],
+        "data_entities": ["CardData", "EntityInfo", "StatRow"],
+        "go_package_focus": ["internal/apifootball"],
+        "tasks": [
+          "Create internal/apifootball/types.go — PlayerResult, TeamResult, H2HStats structs",
+          "Create internal/apifootball/client.go — Client struct {APIKey, HTTPClient, CacheDir}",
+          "Implement apifootball.NewClient(apiKey, cacheDir string) *Client — 10s timeout",
+          "Implement client.SearchPlayer(name string) ([]PlayerResult, error) — GET /players?search={name}, cache 24h",
+          "Implement client.SearchTeam(name string) ([]TeamResult, error) — GET /teams?search={name}, cache 24h",
+          "Implement client.GetH2H(idA, idB int) (H2HStats, error) — GET /fixtures/h2h?h2h={a}-{b}, cache 1h",
+          "Implement writeCache/readCache helpers with TTL check via file mtime",
+          "Create internal/apifootball/testdata/player-search-messi.json and h2h-fixture.json",
+          "Create internal/apifootball/client_test.go — fixture-based tests, cache hit test, empty results test"
+        ],
+        "definition_of_done": [
+          "go test ./internal/apifootball/... passes with no live HTTP calls",
+          "SearchPlayer with fixture returns PlayerResult with non-empty Name",
+          "Cache hit test: http.Client.Do called exactly once across two identical SearchPlayer calls",
+          "GetH2H with fixture returns H2HStats.Matches > 0",
+          "Empty results returns empty slice and nil error"
+        ],
+        "test_hints": [
+          "internal/apifootball/client_test.go: TestSearchPlayer_Fixture — returns PlayerResult with Name='Lionel Messi'",
+          "internal/apifootball/client_test.go: TestSearchPlayer_CacheHit — Do called exactly once",
+          "internal/apifootball/client_test.go: TestSearchPlayer_EmptyResults — empty slice, nil error",
+          "internal/apifootball/client_test.go: TestGetH2H_Fixture — Matches>0",
+          "internal/apifootball/client_test.go: TestCacheTTL_Expired — mtime 25h ago → cache miss"
+        ],
+        "integration_notes": "Import internal/apifootball in cmd/statcard. apifootball.NewClient called with config.APIKey and ~/.statcard/cache/. SearchPlayer called for EntityA and EntityB from ParsedQuery.",
+        "estimated_hours": 5
+      },
+      {
+        "slice_id": "m6-renderer",
+        "name": "SVG Template + PNG Renderer",
+        "goal": "renderer.RenderCard writes valid 1080x1080 and 1080x1350 PNG files from CardData using embedded SVG template.",
+        "components_touched": ["internal/renderer", "templates/"],
+        "api_endpoints": [],
+        "data_entities": ["CardData", "EntityInfo", "StatRow"],
+        "go_package_focus": ["internal/renderer", "templates"],
+        "tasks": [
+          "Replace placeholder templates/card.svg with real SVG using rect/text/line/circle, viewBox 1080x1080, Go template vars: {{.Title}}, {{.Subtitle}}, {{.EntityA.Name}}, {{.EntityB.Name}}, {{.EntityA.AccentColor}}, {{.EntityB.AccentColor}}, {{range .Stats}}, {{.Watermark}}",
+          "Create templates/card-portrait.svg — viewBox 1080x1350 variant",
+          "Create internal/renderer/renderer.go — Renderer struct {FS embed.FS}, EntityInfo struct, StatRow struct",
+          "Implement renderer.New(fs embed.FS) *Renderer",
+          "Implement renderer.interpolateSVG(templateName string, data CardData) (string, error) — text/template.ParseFS + Execute",
+          "Implement renderer.rasterize(svgContent string, width, height int) (image.Image, error) — oksvg.ReadIconStream + rasterx.NewDasher",
+          "Implement renderer.savePNG(img image.Image, path string) error — image/png.Encode",
+          "Implement renderer.RenderCard(data CardData, outputDir string, formats []string, watermark string) ([]string, error) — timestamp filename, iterate formats",
+          "Load Inter-Regular.ttf and Inter-Bold.ttf in renderer.New from embed.FS",
+          "Create internal/renderer/renderer_test.go — 3 test cases: valid PNGs written, filename format, unknown format error"
+        ],
+        "definition_of_done": [
+          "go test ./internal/renderer/... passes all 3 cases",
+          "RenderCard formats=['square','portrait'] writes 2 PNG files",
+          "Both PNGs decode via image/png.Decode with no error",
+          "Filenames match: statcard-{a}-vs-{b}-YYYYMMDD-HHMMSS-{W}x{H}.png",
+          "RenderCard formats=['unknown'] returns non-nil error"
+        ],
+        "test_hints": [
+          "internal/renderer/renderer_test.go: TestRenderCard_TwoFormats — square+portrait both decode as valid PNG",
+          "internal/renderer/renderer_test.go: TestRenderCard_Filename — filename contains entity names and timestamp",
+          "internal/renderer/renderer_test.go: TestRenderCard_UnknownFormat — returns error, no files written"
+        ],
+        "integration_notes": "Import internal/renderer and templates in cmd/statcard. renderer.New(templates.FS) called once at startup. RenderCard called after GetH2H with built CardData.",
+        "estimated_hours": 6
+      },
+      {
+        "slice_id": "m7-generate",
+        "name": "Generate Subcommand — Full Happy Path",
+        "goal": "statcard 'Messi vs Cristiano' with valid API key produces two PNG files, wiring all components.",
+        "components_touched": ["cmd/statcard", "internal/parser", "internal/apifootball", "internal/renderer", "internal/meter", "internal/config"],
+        "api_endpoints": ["statcard <prompt>"],
+        "data_entities": ["ParsedQuery", "CardData", "DailyCounter", "MetricsLog"],
+        "go_package_focus": ["cmd/statcard", "internal/metrics"],
+        "tasks": [
+          "Extract apifootball.ClientInterface interface {SearchPlayer, SearchTeam, GetH2H} for testability",
+          "Wire generate as cobra root command RunE — positional arg is prompt",
+          "Implement generate RunE: 1) config.Load 2) meter.Check 3) parser.Parse 4) client.SearchPlayer(A+B) 5) client.GetH2H 6) build CardData from H2HStats 7) renderer.RenderCard 8) meter.Increment+Save 9) metrics.Append 10) print file paths",
+          "Create internal/metrics/metrics.go — MetricsEntry struct, Append(entry MetricsEntry) error with O_APPEND|O_CREATE",
+          "Create cmd/statcard/generate_test.go — mock ClientInterface, assert 2 PNG paths in stdout, test error paths",
+          "Add --verbose flag: debug logging to stderr of HTTP URLs and durations"
+        ],
+        "definition_of_done": [
+          "go test ./... passes (no integration tag)",
+          "./statcard 'Messi vs Cristiano' with valid API key writes 2 PNGs and prints paths",
+          "./statcard 'solo messi' exits non-zero with Spanish error",
+          "./statcard without init exits non-zero with setup instructions",
+          "6th card attempt exits non-zero with limit message",
+          "~/.statcard/metrics.jsonl has one new JSON line per successful generation"
+        ],
+        "test_hints": [
+          "cmd/statcard/generate_test.go: TestGenerate_Happy — mock client, assert stdout has 2 .png paths",
+          "cmd/statcard/generate_test.go: TestGenerate_NoConfig — ErrNotConfigured → exit 1 + setup message",
+          "cmd/statcard/generate_test.go: TestGenerate_LimitReached — ErrDailyLimitReached → exit 1 + Spanish limit msg",
+          "cmd/statcard/generate_test.go: TestGenerate_ParseError — 'solo jugador' → exit 1 + Spanish parse error",
+          "cmd/statcard/generate_test.go: TestGenerate_NoResults — SearchPlayer returns empty → exit 1 + Spanish no-results"
+        ],
+        "integration_notes": "Imports: internal/config, internal/meter, internal/parser, internal/apifootball, internal/renderer, internal/metrics, templates. renderer.New(templates.FS) at startup.",
+        "estimated_hours": 6
+      },
+      {
+        "slice_id": "m8-status",
+        "name": "Status Subcommand + Full Output",
+        "goal": "statcard status shows cards today, limit, plan, and weekly total.",
+        "components_touched": ["cmd/statcard", "internal/config", "internal/meter", "internal/metrics"],
+        "api_endpoints": ["statcard status"],
+        "data_entities": ["Config", "DailyCounter", "MetricsLog"],
+        "go_package_focus": ["cmd/statcard"],
+        "tasks": [
+          "Expand statcard status RunE: config.Load, meter.Load, compute remaining, read last 7 lines of metrics.jsonl, print formatted status block",
+          "Print: plan tier, daily usage (N/M cards), cards remaining today, total cards this week",
+          "Create cmd/statcard/status_test.go — assert output contains 'cards', usage fraction, plan tier",
+          "Update statcard init to print status after successful config creation"
+        ],
+        "definition_of_done": [
+          "go test ./cmd/statcard/... passes status tests",
+          "./statcard status after init prints plan='free', daily usage, cards remaining",
+          "./statcard status before init exits non-zero",
+          "Output contains '2/5' fraction style"
+        ],
+        "test_hints": [
+          "cmd/statcard/status_test.go: TestStatus_Happy — config+counter with Count=2 → output contains '2/5'",
+          "cmd/statcard/status_test.go: TestStatus_NoConfig — exits non-zero with setup instructions",
+          "cmd/statcard/status_test.go: TestStatus_ZeroUsage — Count=0 → '0/5' in output"
+        ],
+        "integration_notes": "Imports: internal/config, internal/meter, internal/metrics. No API calls.",
+        "estimated_hours": 2
+      },
+      {
+        "slice_id": "m9-polish",
+        "name": "Error Handling, Logging, Release Binary",
+        "goal": "All error paths use Spanish messages, Makefile builds static binary, go test ./... and go vet ./... pass.",
+        "components_touched": ["cmd/statcard", "internal/parser", "internal/apifootball", "internal/renderer", "internal/meter", "internal/config"],
+        "api_endpoints": ["statcard init", "statcard <prompt>", "statcard status"],
+        "data_entities": [],
+        "go_package_focus": ["cmd/statcard"],
+        "tasks": [
+          "Audit all RunE: replace generic errors with Spanish user-facing messages in stderr",
+          "Add --verbose flag to root: debug HTTP URLs and durations to stderr",
+          "Create Makefile with: build (CGO_ENABLED=0, GOOS=darwin GOARCH=arm64), build-linux (GOOS=linux GOARCH=amd64), test (go test ./...), lint (go vet ./...)",
+          "Add -ldflags '-X main.version=...' reading from git tag or defaulting to 'dev'",
+          "Run go vet ./... and fix all warnings",
+          "Run go test ./... and confirm all non-integration tests pass",
+          "Write README.md: installation, quickstart (init + generate), flag reference, API-Football setup link"
+        ],
+        "definition_of_done": [
+          "go test ./... passes with zero failures",
+          "go vet ./... exits 0",
+          "make build produces bin/statcard",
+          "./bin/statcard --version runs without errors",
+          "All user-facing error messages in Spanish",
+          "./bin/statcard --help shows init, status, and generate with descriptions"
+        ],
+        "test_hints": [
+          "go vet ./... produces no output",
+          "./bin/statcard --help contains 'init', 'status', usage example",
+          "./bin/statcard --verbose 'Messi vs Cristiano' prints HTTP URL lines to stderr"
+        ],
+        "integration_notes": "All packages integrated. Final validation of full pipeline.",
+        "estimated_hours": 4
+      }
+    ],
+    "dependency_map": [
+      { "slice_id": "m1-scaffold", "depends_on": [] },
+      { "slice_id": "m2-config", "depends_on": ["m1-scaffold"] },
+      { "slice_id": "m3-meter", "depends_on": ["m1-scaffold"] },
+      { "slice_id": "m4-parser", "depends_on": ["m1-scaffold"] },
+      { "slice_id": "m5-apifootball", "depends_on": ["m1-scaffold"] },
+      { "slice_id": "m6-renderer", "depends_on": ["m1-scaffold"] },
+      { "slice_id": "m7-generate", "depends_on": ["m2-config", "m3-meter", "m4-parser", "m5-apifootball", "m6-renderer"] },
+      { "slice_id": "m8-status", "depends_on": ["m2-config", "m3-meter", "m7-generate"] },
+      { "slice_id": "m9-polish", "depends_on": ["m7-generate", "m8-status"] }
+    ],
+    "risk_register": [
+      { "risk": "oksvg does not support SVG features needed for card design", "source": "open_question", "mitigation": "Card template uses only rect, text, line, circle with solid fills. Validate in m6-renderer.", "resolve_by_slice": "m6-renderer" },
+      { "risk": "API-Football free tier (100 req/day) exhausted during development", "source": "tech_choice", "mitigation": "All tests use testdata fixtures. Integration tests gated behind //go:build integration.", "resolve_by_slice": "m5-apifootball" },
+      { "risk": "Font rendering inside rasterx may not align with oksvg SVG text elements", "source": "tech_choice", "mitigation": "Use oksvg for SVG text; if insufficient, replace with opentype glyph outlines.", "resolve_by_slice": "m6-renderer" },
+      { "risk": "Concurrent writes to ~/.statcard/ could corrupt files", "source": "sequencing", "mitigation": "Atomic write via os.Rename. Document concurrent use unsupported.", "resolve_by_slice": "m3-meter" }
+    ],
+    "week1_slices": ["m1-scaffold", "m2-config", "m3-meter", "m4-parser", "m5-apifootball"],
+    "week2_slices": ["m6-renderer", "m7-generate", "m8-status", "m9-polish"]
+  }
+}

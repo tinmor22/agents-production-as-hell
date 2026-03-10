@@ -1,0 +1,33 @@
+{
+  "get": "fixtures/headtohead",
+  "parameters": {"h2h": "529-541", "last": "20"},
+  "errors": [],
+  "results": 3,
+  "paging": {"current": 1, "total": 1},
+  "response": [
+    {
+      "fixture": {"id": 1001},
+      "teams": {
+        "home": {"id": 529, "name": "Barcelona"},
+        "away": {"id": 541, "name": "Real Madrid"}
+      },
+      "goals": {"home": 3, "away": 1}
+    },
+    {
+      "fixture": {"id": 1002},
+      "teams": {
+        "home": {"id": 541, "name": "Real Madrid"},
+        "away": {"id": 529, "name": "Barcelona"}
+      },
+      "goals": {"home": 2, "away": 2}
+    },
+    {
+      "fixture": {"id": 1003},
+      "teams": {
+        "home": {"id": 529, "name": "Barcelona"},
+        "away": {"id": 541, "name": "Real Madrid"}
+      },
+      "goals": {"home": 0, "away": 1}
+    }
+  ]
+}

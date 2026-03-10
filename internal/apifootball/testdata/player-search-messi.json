@@ -1,0 +1,36 @@
+{
+  "get": "players",
+  "parameters": {"search": "Messi"},
+  "errors": [],
+  "results": 1,
+  "paging": {"current": 1, "total": 1},
+  "response": [
+    {
+      "player": {
+        "id": 154,
+        "name": "Lionel Messi",
+        "firstname": "Lionel",
+        "lastname": "Messi",
+        "photo": "https://media.api-sports.io/football/players/154.png"
+      },
+      "statistics": [
+        {
+          "team": {
+            "id": 1741,
+            "name": "Inter Miami",
+            "logo": "https://media.api-sports.io/football/teams/1741.png"
+          },
+          "games": {
+            "appearences": 19,
+            "lineups": 18,
+            "minutes": 1530
+          },
+          "goals": {
+            "total": 20,
+            "assists": 16
+          }
+        }
+      ]
+    }
+  ]
+}

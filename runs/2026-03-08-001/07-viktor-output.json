@@ -1,0 +1,200 @@
+{
+  "implementation": {
+    "slice_id": "m1-scaffold+m2-config+m3-meter+m4-parser+m5-apifootball+m6-renderer+m7-generate+m8-status+m9-polish",
+    "files_changed": [
+      {
+        "path": "go.mod",
+        "action": "created",
+        "change_summary": "Initialize Go module github.com/statcard/statcard with cobra and golang.org/x/image as direct dependencies."
+      },
+      {
+        "path": "go.sum",
+        "action": "modified",
+        "change_summary": "Updated with resolved dependency checksums for cobra, x/image, x/text, pflag, mousetrap."
+      },
+      {
+        "path": ".gitignore",
+        "action": "modified",
+        "change_summary": "Added bin/ and statcard binary to ignore list."
+      },
+      {
+        "path": "Makefile",
+        "action": "created",
+        "change_summary": "Build targets: build (CGO_ENABLED=0 static binary with ldflags version injection), build-linux, test, lint, clean."
+      },
+      {
+        "path": "cmd/statcard/main.go",
+        "action": "created",
+        "change_summary": "Cobra CLI entrypoint with init, status, version subcommands and generate as root RunE. Wires config, meter, parser, apifootball, renderer, metrics, and templates packages into full generate flow."
+      },
+      {
+        "path": "cmd/statcard/main_test.go",
+        "action": "created",
+        "change_summary": "Tests for version subcommand, help output, init config save, status after init (0/5), status with usage (2/5), status before init (error)."
+      },
+      {
+        "path": "cmd/statcard/generate_test.go",
+        "action": "created",
+        "change_summary": "Tests for generate happy path with mock ClientInterface, no config error, daily limit reached error, parse error with Spanish message, no args shows help."
+      },
+      {
+        "path": "internal/config/config.go",
+        "action": "created",
+        "change_summary": "Config struct with Load/Save to ~/.statcard/config.json, ErrNotConfigured sentinel, defaults (plan=free, daily_limit=5)."
+      },
+      {
+        "path": "internal/config/config_test.go",
+        "action": "created",
+        "change_summary": "5 tests: missing file returns ErrNotConfigured, save-load round-trip, default limit=5, default plan=free, nested dir creation."
+      },
+      {
+        "path": "internal/meter/meter.go",
+        "action": "created",
+        "change_summary": "DailyCounter with Load/Save/Check/Increment, midnight date reset, ErrDailyLimitReached sentinel error."
+      },
+      {
+        "path": "internal/meter/meter_test.go",
+        "action": "created",
+        "change_summary": "4 tests: allow (count<limit), block (count>=limit), date reset (yesterday resets to 0), increment round-trip via filesystem."
+      },
+      {
+        "path": "internal/parser/parser.go",
+        "action": "created",
+        "change_summary": "Spanish prompt parser extracting EntityA/EntityB/Context via vs/contra regex separator, ErrNoSeparator sentinel with Spanish message."
+      },
+      {
+        "path": "internal/parser/parser_test.go",
+        "action": "created",
+        "change_summary": "6 table-driven subtests: VS separator, contra+context, no separator error, accented chars preserved, uppercase VS, empty input."
+      },
+      {
+        "path": "internal/apifootball/types.go",
+        "action": "created",
+        "change_summary": "PlayerResult, TeamResult, H2HStats exported types for API-Football v3 data."
+      },
+      {
+        "path": "internal/apifootball/client.go",
+        "action": "created",
+        "change_summary": "HTTP adapter with ClientInterface for mockability, HTTPDoer abstraction, filesystem cache (SHA256 keys, 24h TTL), SearchPlayer, SearchTeam, GetH2H methods. Uses 'any' not 'interface{}'."
+      },
+      {
+        "path": "internal/apifootball/client_test.go",
+        "action": "created",
+        "change_summary": "4 fixture-based tests with mockHTTP: search player returns Messi, cache hit verifies Do called once, empty results returns empty slice, H2H fixture validates win/draw/goal tallying."
+      },
+      {
+        "path": "internal/apifootball/testdata/player-search-messi.json",
+        "action": "created",
+        "change_summary": "API-Football v3 fixture for Messi player search with statistics."
+      },
+      {
+        "path": "internal/apifootball/testdata/player-search-empty.json",
+        "action": "created",
+        "change_summary": "API-Football v3 fixture for empty search results."
+      },
+      {
+        "path": "internal/apifootball/testdata/h2h-fixture.json",
+        "action": "created",
+        "change_summary": "API-Football v3 fixture for Barcelona vs Real Madrid H2H (3 matches: 1 win each, 1 draw)."
+      },
+      {
+        "path": "internal/renderer/types.go",
+        "action": "created",
+        "change_summary": "CardData, EntityInfo, StatRow exported types for card rendering input."
+      },
+      {
+        "path": "internal/renderer/renderer.go",
+        "action": "created",
+        "change_summary": "Pure Go renderer drawing directly on image.RGBA with embedded Inter fonts via golang.org/x/image/font/opentype. Supports square (1080x1080) and portrait (1080x1350) formats. Includes fillRect, drawCenteredText, parseHexColor helpers."
+      },
+      {
+        "path": "internal/renderer/renderer_test.go",
+        "action": "created",
+        "change_summary": "3 tests: two-format PNG decode validation (both square and portrait), filename contains entity names and dimensions, unknown format returns error."
+      },
+      {
+        "path": "internal/metrics/metrics.go",
+        "action": "created",
+        "change_summary": "Append-only JSONL metrics log with Append (O_APPEND|O_CREATE) and CountSince (time-filtered count) functions."
+      },
+      {
+        "path": "internal/metrics/metrics_test.go",
+        "action": "created",
+        "change_summary": "3 tests: file creation on first append, count since time filter, missing file returns 0."
+      },
+      {
+        "path": "templates/embed.go",
+        "action": "created",
+        "change_summary": "Embeds *.svg and fonts/* via go:embed directive into FS variable."
+      },
+      {
+        "path": "templates/embed_test.go",
+        "action": "created",
+        "change_summary": "3 tests verifying card.svg, Inter-Regular.ttf, Inter-Bold.ttf embed correctly with non-empty content."
+      },
+      {
+        "path": "templates/card.svg",
+        "action": "created",
+        "change_summary": "1080x1080 SVG template with Go template variables for title, entities, stats, watermark (kept as design reference)."
+      },
+      {
+        "path": "templates/card-portrait.svg",
+        "action": "created",
+        "change_summary": "1080x1350 portrait SVG template with same Go template variables (kept as design reference)."
+      },
+      {
+        "path": "templates/fonts/Inter-Regular.ttf",
+        "action": "created",
+        "change_summary": "Inter Regular font (411KB) from rsms/inter v4.1 release, embedded in binary."
+      },
+      {
+        "path": "templates/fonts/Inter-Bold.ttf",
+        "action": "created",
+        "change_summary": "Inter Bold font (420KB) from rsms/inter v4.1 release, embedded in binary."
+      }
+    ],
+    "test_results": {
+      "command": "go test -count=1 ./...",
+      "passed": true,
+      "output": "ok  github.com/statcard/statcard/cmd/statcard       1.067s\nok  github.com/statcard/statcard/internal/apifootball  0.255s\nok  github.com/statcard/statcard/internal/config       0.445s\nok  github.com/statcard/statcard/internal/meter        1.346s\nok  github.com/statcard/statcard/internal/metrics      1.159s\nok  github.com/statcard/statcard/internal/parser       0.633s\nok  github.com/statcard/statcard/internal/renderer     0.904s\nok  github.com/statcard/statcard/templates             1.524s\n\n34 tests across 8 packages, 0 failures.\ngo vet ./... exit 0\ngo build ./... exit 0"
+    },
+    "tech_debt": [
+      {
+        "location": "internal/renderer/renderer.go",
+        "description": "SVG templates (card.svg, card-portrait.svg) are embedded but not used for rendering. The renderer draws directly on image.RGBA because oksvg cannot handle Go template syntax in SVGs. SVGs kept as design reference. If SVG rendering is desired later, interpolate templates first then pass clean SVG to oksvg.",
+        "severity": "low"
+      },
+      {
+        "location": "cmd/statcard/main.go:configPath,meterDir,metricsDir,apiClient",
+        "description": "Package-level vars used for test injection. A proper DI approach (App struct passed to command constructors) would be cleaner but was deferred for shipping speed.",
+        "severity": "low"
+      },
+      {
+        "location": "internal/apifootball/client.go:SearchPlayer",
+        "description": "Season is hardcoded to 2024. Should be configurable or auto-detected based on current date.",
+        "severity": "medium"
+      },
+      {
+        "location": "cmd/statcard/main.go:runGenerate",
+        "description": "Entity accent colors are hardcoded (#00A3E0, #E4002B). Future: derive from team colors via API or config.",
+        "severity": "low"
+      },
+      {
+        "location": "go.mod",
+        "description": "oksvg and rasterx were removed by go mod tidy since they are unused. If SVG rendering is re-added, re-add these deps.",
+        "severity": "low"
+      }
+    ],
+    "gotchas": [
+      "The renderer uses pure Go image drawing (image.RGBA + golang.org/x/image/font), NOT oksvg. Priya should instrument renderer.drawCard and renderer.RenderCard, not any SVG parsing path.",
+      "apifootball.ClientInterface is the mock boundary for the HTTP layer. All generate tests inject a mockClient via the package-level apiClient var. Priya should add tracing/metrics at the ClientInterface boundary.",
+      "The CLI uses package-level vars (configPath, meterDir, metricsDir, apiClient) for test injection. These are NOT thread-safe. Tests run sequentially within the cmd/statcard package.",
+      "Filesystem cache in apifootball uses SHA256-based keys with 24h TTL. Cache files live in ~/.statcard/cache/. No cache eviction is implemented.",
+      "All user-facing errors are in Spanish. Sentinel errors: config.ErrNotConfigured, meter.ErrDailyLimitReached, parser.ErrNoSeparator, renderer.ErrUnknownFormat.",
+      "The generate flow in runGenerate is the main hot path: config.Load -> meter.Check -> parser.Parse -> SearchPlayer(A) -> SearchPlayer(B) -> RenderCard -> meter.Increment -> metrics.Append. Each step is a meaningful instrumentation point.",
+      "Font files (Inter-Regular.ttf 411KB, Inter-Bold.ttf 420KB) are embedded in the binary via go:embed, adding ~830KB to binary size.",
+      "go.mod has golang.org/x/image as a direct dependency. oksvg/rasterx were pruned by go mod tidy since no code imports them."
+    ],
+    "ready_for_observability": true
+  }
+}

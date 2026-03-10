@@ -1,0 +1,100 @@
+{
+  "design": {
+    "brief_description": "StatCard CLI: a single Go binary that takes a Spanish-language prompt, fetches football stats from API-Football, and renders a publication-ready PNG stat card in under 90 seconds.",
+    "goal": "Design a zero-dependency CLI that lets solo LATAM football content creators replace 60 minutes of manual Canva work with a single command, shipping as a static binary with a local free-tier gate.",
+    "tech_stack": {
+      "language": "Go 1.25+",
+      "storage": "Filesystem (~/.statcard/ for config, counters, and license state)",
+      "key_libs": [
+        "net/http (stdlib — API-Football HTTP client)",
+        "encoding/json (stdlib — parse API responses and config)",
+        "text/template (stdlib — SVG template rendering)",
+        "image, image/png, image/color (stdlib — PNG encoding)",
+        "github.com/srwiley/oksvg + github.com/srwiley/rasterx (SVG rasterization to image.RGBA — pure Go, no CGo)",
+        "github.com/spf13/cobra (CLI framework)",
+        "golang.org/x/image/font/opentype (font rendering for text in cards)",
+        "embed (stdlib — embed SVG template + bundled font at compile time)"
+      ],
+      "excluded": ["Puppeteer / Chromium / headless browser", "Docker", "Any database", "Any web framework", "CGo-dependent image libraries", "anthropic-sdk-go or any LLM SDK"]
+    },
+    "diagrams": {
+      "context": "flowchart TB\n    Creator([\"Football Content Creator\"])\n    CLI[\"StatCard CLI (Go static binary)\"]\n    APIF[\"API-Football (free tier)\"]\n    FS[(\"Local Filesystem ~/.statcard/ + CWD\")]\n    Creator -->|\"Spanish prompt + flags\"| CLI\n    CLI -->|\"REST API calls\"| APIF\n    APIF -->|\"JSON stats response\"| CLI\n    CLI -->|\"PNG files (1080x1080, 1080x1350)\"| FS\n    CLI -->|\"Read/write daily counter + config\"| FS\n    FS -->|\"Card PNG files\"| Creator",
+      "components": "flowchart TD\n    subgraph CLI[\"statcard binary\"]\n        CMD[\"cmd/statcard/main.go\"]\n        PARSER[\"internal/parser\"]\n        APICLIENT[\"internal/apifootball\"]\n        RENDERER[\"internal/renderer\"]\n        METER[\"internal/meter\"]\n        CONFIG[\"internal/config\"]\n        TEMPLATES[\"templates/ (embedded SVG + font)\"]\n    end\n    CMD --> PARSER\n    CMD --> METER\n    CMD --> CONFIG\n    PARSER --> APICLIENT\n    APICLIENT --> RENDERER\n    RENDERER --> TEMPLATES",
+      "sequences": [
+        {
+          "name": "Generate Card (Happy Path)",
+          "diagram": "sequenceDiagram\n    participant U as Creator\n    participant CLI as statcard CLI\n    participant M as Meter\n    participant P as Parser\n    participant API as API-Football\n    participant R as Renderer\n    participant FS as Filesystem\n    U->>CLI: statcard \"Messi vs Cristiano en Champions League\" --watermark @futboldata\n    CLI->>M: CheckDailyLimit()\n    M-->>CLI: OK (3 < 5)\n    CLI->>P: Parse(prompt)\n    P-->>CLI: ParsedQuery{PlayerA: \"Messi\", PlayerB: \"Cristiano\", Context: \"Champions League\"}\n    CLI->>API: SearchPlayer(\"Messi\") -> ID=154\n    CLI->>API: SearchPlayer(\"Cristiano\") -> ID=874\n    CLI->>API: GetH2HStats(154, 874)\n    API-->>CLI: StatsPayload\n    CLI->>R: RenderCard(stats, watermark, \"1080x1080\")\n    R->>FS: Write PNG\n    CLI->>R: RenderCard(stats, watermark, \"1080x1350\")\n    R->>FS: Write PNG\n    CLI->>M: IncrementCounter()\n    CLI-->>U: Done. 2 cards saved."
+        },
+        {
+          "name": "Daily Limit Reached",
+          "diagram": "sequenceDiagram\n    participant U as Creator\n    participant CLI as statcard CLI\n    participant M as Meter\n    U->>CLI: statcard \"Boca vs River\"\n    CLI->>M: CheckDailyLimit()\n    M-->>CLI: LIMIT_REACHED (5/5)\n    CLI-->>U: Error: Daily limit reached. Upgrade to Pro for 100 cards/day."
+        }
+      ]
+    },
+    "architecture": {
+      "components": [
+        { "name": "cmd/statcard", "responsibility": "CLI entrypoint. Defines root command, subcommands (init, generate, status). Wires all components. Owns flag parsing (--watermark, --api-key, --format, --output-dir). Does NOT own business logic.", "tech": "Go package main, cobra.Command" },
+        { "name": "internal/parser", "responsibility": "Extracts structured query from a Spanish-language natural text prompt. Detects 'vs'/'contra' patterns, extracts two entity names, and optional competition context. Pure functions, no API calls.", "tech": "Go package parser — stdlib regexp/strings only" },
+        { "name": "internal/apifootball", "responsibility": "HTTP adapter for api-football.com v3. Owns: player search, team search, head-to-head stats, season stats. Maps API JSON responses to domain structs.", "tech": "Go package apifootball — net/http, encoding/json" },
+        { "name": "internal/renderer", "responsibility": "Takes domain stats + config and produces PNG files. Owns: SVG template interpolation via text/template, SVG-to-PNG rasterization via oksvg/rasterx, font rendering, output file naming.", "tech": "Go package renderer — oksvg, rasterx, text/template, image/png, embed" },
+        { "name": "internal/meter", "responsibility": "Enforces daily card generation limit. Reads/writes JSON counter at ~/.statcard/counter.json. Resets count when date changes.", "tech": "Go package meter — encoding/json, os, time" },
+        { "name": "internal/config", "responsibility": "Manages persistent configuration at ~/.statcard/config.json. Owns: API key storage, default watermark, plan tier.", "tech": "Go package config — encoding/json, os" },
+        { "name": "templates/", "responsibility": "Holds the single hardcoded SVG card template and bundled font file. Embedded at compile time.", "tech": "Go embed.FS via templates/embed.go" }
+      ],
+      "flows": [
+        "1. CLI boot: main.go reads config from ~/.statcard/config.json. If missing and command is not 'init', exits with setup instructions.",
+        "2. Meter check: meter.Check(limit) reads counter.json. If today's count >= limit, return error with upgrade message. If date differs, reset count to 0.",
+        "3. Prompt parsing: parser.Parse(prompt) uses regexp to find 'vs'/'contra' separator, extracts two entity names and optional 'en <context>' suffix.",
+        "4. Entity resolution: CLI calls apifootball.SearchPlayer or apifootball.SearchTeam for each entity name. If search returns zero results, tries the other type. If still zero, returns clear error.",
+        "5. Stats fetch: Based on resolved entity types, CLI calls appropriate stats endpoint (H2H for two players/teams).",
+        "6. Card rendering: renderer.Render(stats, config) interpolates SVG template, rasterizes to 1080x1080 and 1080x1350 PNGs, saves to CWD with descriptive filenames.",
+        "7. Meter increment: After successful render, meter.Increment() bumps today's count.",
+        "8. Metrics emission: Append a line to ~/.statcard/metrics.jsonl with timestamp, entities, and duration."
+      ]
+    },
+    "api_design": [
+      {
+        "endpoint": "statcard init",
+        "method": "CLI",
+        "request": { "description": "Initialize StatCard configuration with API-Football API key", "fields": [{ "name": "--api-key", "type": "string", "required": true }, { "name": "--watermark", "type": "string", "required": false }] },
+        "response": { "description": "Creates ~/.statcard/ directory and config.json file", "fields": [{ "name": "stdout", "type": "string" }] },
+        "notes": "Overwrites existing config if present. Validates api-key is non-empty. Does NOT validate against API-Football."
+      },
+      {
+        "endpoint": "statcard <prompt>",
+        "method": "CLI",
+        "request": { "description": "Generate stat cards from a Spanish-language prompt. Default command.", "fields": [{ "name": "prompt", "type": "string (positional arg)", "required": true }, { "name": "--watermark", "type": "string", "required": false }, { "name": "--format", "type": "string (both|square|portrait)", "required": false }, { "name": "--output-dir", "type": "string", "required": false }] },
+        "response": { "description": "Generates 1 or 2 PNG files in output directory (default: CWD). Prints file paths and generation time.", "fields": [{ "name": "stdout", "type": "string" }, { "name": "files", "type": "PNG files on disk" }] },
+        "notes": "Errors: no config -> exit 1 'Run statcard init first'. Daily limit -> exit 1 with upgrade message. API error -> exit 1 with specific message. No results -> exit 1 'No se encontró: <name>'."
+      },
+      {
+        "endpoint": "statcard status",
+        "method": "CLI",
+        "request": { "description": "Show current daily usage and plan info", "fields": [] },
+        "response": { "description": "Prints cards generated today, daily limit, and plan tier", "fields": [{ "name": "stdout", "type": "string" }] },
+        "notes": "Reads counter.json and config.json. No API calls."
+      }
+    ],
+    "data_model": [
+      { "entity": "Config", "storage": "filesystem — ~/.statcard/config.json", "fields": [{ "name": "api_key", "type": "string", "notes": "API-Football API key" }, { "name": "watermark", "type": "string", "notes": "Default watermark text" }, { "name": "plan", "type": "string", "notes": "'free' or 'pro'" }, { "name": "daily_limit", "type": "int", "notes": "free=5, pro=100" }], "relationships": [] },
+      { "entity": "DailyCounter", "storage": "filesystem — ~/.statcard/counter.json", "fields": [{ "name": "date", "type": "string (YYYY-MM-DD)", "notes": "Reset if date differs from today" }, { "name": "count", "type": "int", "notes": "Cards generated today" }], "relationships": [] },
+      { "entity": "MetricsLog", "storage": "filesystem — ~/.statcard/metrics.jsonl (append-only)", "fields": [{ "name": "timestamp", "type": "string (RFC3339)" }, { "name": "entity_a", "type": "string" }, { "name": "entity_b", "type": "string" }, { "name": "context", "type": "string" }, { "name": "duration_ms", "type": "int" }, { "name": "formats", "type": "[]string" }, { "name": "error", "type": "string" }], "relationships": [] },
+      { "entity": "ParsedQuery", "storage": "in-memory", "fields": [{ "name": "EntityA", "type": "string" }, { "name": "EntityB", "type": "string" }, { "name": "Context", "type": "string" }, { "name": "QueryType", "type": "string (h2h_players|h2h_teams|unknown)" }], "relationships": [] },
+      { "entity": "CardData", "storage": "in-memory", "fields": [{ "name": "Title", "type": "string" }, { "name": "Subtitle", "type": "string" }, { "name": "EntityA", "type": "EntityInfo" }, { "name": "EntityB", "type": "EntityInfo" }, { "name": "Stats", "type": "[]StatRow" }, { "name": "Watermark", "type": "string" }, { "name": "GeneratedAt", "type": "string" }], "relationships": ["EntityInfo is embedded struct", "StatRow is embedded struct"] },
+      { "entity": "EntityInfo", "storage": "in-memory", "fields": [{ "name": "Name", "type": "string" }, { "name": "TeamName", "type": "string" }, { "name": "AccentColor", "type": "string (hex)" }], "relationships": [] },
+      { "entity": "StatRow", "storage": "in-memory", "fields": [{ "name": "Label", "type": "string", "notes": "Stat name in Spanish: Goles, Asistencias, Partidos" }, { "name": "ValueA", "type": "string" }, { "name": "ValueB", "type": "string" }, { "name": "HighlightWinner", "type": "string (a|b|none)" }], "relationships": [] }
+    ],
+    "open_questions": [
+      { "question": "API-Football free tier: 100 req/day, ~25-33 cards max. Should we cache search results?", "blocking": "viktor", "default_assumption": "Implement filesystem cache at ~/.statcard/cache/ with 24h TTL for search results and 1h TTL for stats." },
+      { "question": "Which font to bundle for card text rendering?", "blocking": "viktor", "default_assumption": "Bundle Inter (Regular + Bold, ~300KB). OFL-licensed, excellent Latin support." },
+      { "question": "oksvg may not support all SVG features. How sophisticated can the template be?", "blocking": "viktor", "default_assumption": "Use only basic shapes (rect, text, line, circle) and solid fills. No gradients, no filters. If oksvg fails on text, fall back to golang.org/x/image/font directly." },
+      { "question": "Should 'statcard init' guide API-Football signup?", "blocking": "omar", "default_assumption": "Print a one-line URL to API-Football RapidAPI page and ask user to paste their key." },
+      { "question": "Single-entity prompts (no 'vs')?", "blocking": "viktor", "default_assumption": "MVP only supports comparison prompts. Return clear error if no separator found." },
+      { "question": "Card filename collision?", "blocking": "viktor", "default_assumption": "Include short timestamp suffix: statcard-messi-vs-cristiano-20260308-143022-1080x1080.png" }
+    ],
+    "metrics": {
+      "business": ["cards_generated_total", "cards_generated_daily", "daily_limit_hits", "first_card_latency_ms", "unique_active_days"],
+      "technical": ["api_football_request_duration_ms", "api_football_errors_total", "api_football_daily_quota_used", "svg_render_duration_ms", "png_file_size_bytes", "cache_hit_rate", "prompt_parse_failures_total", "total_command_duration_ms"]
+    }
+  }
+}

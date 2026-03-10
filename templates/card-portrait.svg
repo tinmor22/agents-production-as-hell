@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1350" width="1080" height="1350">
+  <rect width="1080" height="1350" fill="#1a1a2e"/>
+  <text x="540" y="120" text-anchor="middle" fill="#ffffff" font-size="48" font-family="Inter">{{.Title}}</text>
+  <text x="540" y="180" text-anchor="middle" fill="#cccccc" font-size="28" font-family="Inter">{{.Subtitle}}</text>
+  <text x="270" y="340" text-anchor="middle" fill="{{.EntityA.AccentColor}}" font-size="36" font-family="Inter">{{.EntityA.Name}}</text>
+  <text x="810" y="340" text-anchor="middle" fill="{{.EntityB.AccentColor}}" font-size="36" font-family="Inter">{{.EntityB.Name}}</text>
+  <line x1="0" y1="400" x2="1080" y2="400" stroke="#333333" stroke-width="2"/>
+  <text x="540" y="1320" text-anchor="middle" fill="#666666" font-size="18" font-family="Inter">{{.Watermark}}</text>
+</svg>

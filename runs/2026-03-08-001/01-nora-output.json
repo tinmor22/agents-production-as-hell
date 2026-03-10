@@ -1,0 +1,102 @@
+{
+  "pipeline_ready": true,
+  "problems": [
+    {
+      "title": "No herramienta de acceso unificado a datos de fútbol para creadores indie latinoamericanos",
+      "problem_statement": "Un creador de contenido de fútbol en Argentina que publica estadísticas virales en redes sociales debe consultar manualmente 3–5 fuentes distintas (FBref, Transfermarkt, BDFA, Sofascore, Wikipedia) para armar una sola publicación comparativa. No existe un backend centralizado orientado a creadores con menos de 500k seguidores que agregue datos históricos, ofrezca endpoints REST simples y cueste menos de $50 USD/mes. Los SaaS existentes (ContentStadium, Driblab) apuntan exclusivamente a clubes profesionales con presupuestos de $100–$1000/mes y flujos de trabajo de broadcasting, no a cuentas de fans.",
+      "target_user": "Creador de contenido de fútbol independiente (10k–500k seguidores en Twitter/TikTok/Instagram) en Argentina o Latinoamérica que publica estadísticas y datos curiosos al estilo Davoo Xeneize o La Cobra.",
+      "current_workaround": "Búsqueda manual en FBref y Transfermarkt, copiado de tablas a hojas de cálculo, y armado artesanal de imágenes con Canva o Adobe Express. El proceso toma entre 45 y 90 minutos por publicación.",
+      "why_now": "YouTube publicó en marzo 2026 su reporte 'A Football Revolution' confirmando que los creadores latinoamericanos de fútbol alcanzaron 1 billón de vistas en el Club World Cup 2025. El volumen de contenido exige automatización: los creadores que publican más de 2 veces al día necesitan pipelines de datos, no búsquedas manuales.",
+      "success_metrics": [
+        "Reducir el tiempo de investigación por publicación de 60 minutos a menos de 10 minutos",
+        "Creador capaz de publicar ≥3 estadísticas verificadas por día sin asistente",
+        "Costo de acceso a datos por debajo de $20 USD/mes para el tier básico"
+      ],
+      "data_signals": [
+        "API-Football free tier: 100 req/día; plan Starter: €11/mes — barrera para creadores que necesitan historial profundo",
+        "football-data.org: 10 req/min en plan gratuito, acceso restringido a competiciones secundarias",
+        "TikTok: búsquedas virales 'qué app usa Davo para estadísticas' confirman que fans notan la fricción del creador al buscar datos",
+        "ContentStadium: $100–$1000/mes, orientado exclusivamente a clubes profesionales"
+      ],
+      "severity": "high",
+      "confidence": 0.9,
+      "notes": "La señal de precio de ContentStadium ($100–$1000/mes) confirma que el mercado cobra caro por resolver exactamente este problema, pero sólo para clubes. El gap para creadores indie es real y no está cubierto por ningún producto con precio accesible.",
+      "evidence": {
+        "source_url": "https://www.api-football.com/pricing",
+        "quote": "Prices start at $19 per month; free plan gives access to all endpoints but with daily request caps — creating a hard ceiling for creators needing deep historical lookups."
+      }
+    },
+    {
+      "title": "Generación manual de tarjetas de estadísticas virales: 60+ minutos por pieza, zero automatización",
+      "problem_statement": "Los creadores de fútbol que imitan el formato viral de cuentas como Davoo Xeneize o La Cobra producen imágenes con datos comparativos (ej. 'Riquelme vs Zidane en Champions') de forma totalmente manual: buscan el dato, lo verifican, diseñan la imagen en Canva y la publican. No existe ningún sistema que dado un prompt en español ('mejor goleador de Boca en Libertadores') devuelva una tarjeta visual lista para publicar en menos de 60 segundos. El cuello de botella no es la creatividad — es la ejecución técnica repetitiva.",
+      "target_user": "Creador de fútbol en Twitter/Instagram/TikTok (Argentina, México, Colombia) con 5k–200k seguidores que publica entre 1 y 5 piezas visuales de estadísticas por día.",
+      "current_workaround": "Canva con templates manuales, búsqueda en FBref o Wikipedia, y copy-paste de números. Algunos usan Google Sheets + fórmulas para tablas comparativas. Ninguno tiene pipeline automatizado.",
+      "why_now": "El reporte de YouTube 2026 para Latinoamérica confirma que el 66% de fanáticos en México (14–49 años) consume contenido de análisis de creadores semanalmente. La demanda de contenido de estadísticas crece mientras la capacidad de producción manual no escala.",
+      "success_metrics": [
+        "Tiempo de generación de una tarjeta estadística de menos de 90 segundos end-to-end",
+        "Al menos 3 formatos de tarjeta prediseñados listos para exportar a redes sociales",
+        "Retención de creadores: ≥70% de usuarios activos a los 30 días"
+      ],
+      "data_signals": [
+        "TikTok: múltiples videos virales preguntando 'qué página usa Davo para ver estadísticas' — señal directa de que fans observan la fricción en el proceso del creador",
+        "YouTube report: CazéTV acumuló 1 billón de vistas durante el Club World Cup 2025",
+        "Búsquedas en TikTok de 'app estadísticas fútbol Davo Xeneize' tienen miles de visualizaciones confirmando demanda activa"
+      ],
+      "severity": "high",
+      "confidence": 0.85,
+      "notes": "El comportamiento de los fans buscando activamente 'qué app usa Davo' es una señal de demanda reprimida excepcionalmente fuerte.",
+      "evidence": {
+        "source_url": "https://www.tiktok.com/discover/app-que-usa-davo-para-los-resultados-de-los-partidos",
+        "quote": "TikTok discovery page confirms viral search volume around 'app que usa Davo para estadísticas del fútbol' — fans actively hunting for the tools their favourite creators use."
+      }
+    },
+    {
+      "title": "Datos históricos de fútbol latinoamericano (AFA, Libertadores, historia pre-2000) fragmentados e inaccesibles para creadores",
+      "problem_statement": "Los datos históricos de ligas sudamericanas —especialmente AFA, Copa Libertadores pre-2000, y torneos regionales— son casi inaccesibles en APIs modernas. FBref tiene cobertura limitada de ligas menores y no cubre BDFA. Las APIs comerciales (API-Football, Sportmonks) tienen coverage fragmentada para torneos sudamericanos históricos. Un creador que quiere publicar 'los 10 goles más raros de la historia de Vélez' pasa horas excavando fuentes dispersas o directamente no puede construir el contenido.",
+      "target_user": "Creador de contenido especializado en fútbol argentino o sudamericano (hincha de Boca, River, Racing, etc.) que quiere publicar datos históricos y curiosidades de su club o liga con fuentes verificables.",
+      "current_workaround": "Consulta manual a BDFA (bdfa.com.ar), Alejandro Fabbri's blog de estadísticas, Wikipedia en español, y libros digitalizados de historia de clubes. No hay API. Todo es scraping o copia manual.",
+      "why_now": "El auge del contenido 'datos curiosos' y el formato de cards informativas en TikTok/Reels/Twitter ha creado demanda masiva de datos históricos locales justo cuando no hay oferta estructurada.",
+      "success_metrics": [
+        "Cobertura de al menos las últimas 30 temporadas de la Primera División AFA",
+        "API con endpoint de 'dato curioso aleatorio' que devuelva un hecho verificable con fuente",
+        "Tiempo de respuesta a query histórico menor a 2 segundos"
+      ],
+      "data_signals": [
+        "BDFA.com.ar existe desde los 2000s con datos históricos de fútbol argentino pero sin API pública",
+        "Genbeta publicó lista de '11 mejores cuentas de Twitter con datos de fútbol' confirmando que la audiencia busca activamente cuentas especializadas en estadísticas",
+        "AFA reportó récords históricos de asistencia y seguidores en redes en 2023"
+      ],
+      "severity": "medium",
+      "confidence": 0.75,
+      "notes": "El problema es real pero la solución técnica (web scraping de BDFA + normalización) es moderadamente compleja. El riesgo principal es legal/TOS de los sitios fuente.",
+      "evidence": {
+        "source_url": "https://www.bdfa.com.ar/",
+        "quote": "BDFA nace con el fin de seguir y mantener las fichas históricas de todos los jugadores de fútbol posibles, poniendo el foco especial sobre los jugadores argentinos — sin API pública disponible."
+      }
+    },
+    {
+      "title": "Ausencia de motor de descubrimiento de 'datos virales' para fútbol: los creadores no saben qué estadísticas van a explotar",
+      "problem_statement": "El principal trabajo del creador de estadísticas de fútbol no es diseñar ni programar — es descubrir qué dato va a ser sorprendente y compartible. Hoy ese proceso es completamente manual e intuitivo: el creador navega FBref sin dirección hasta encontrar algo llamativo. No existe ninguna herramienta que analice datos históricos y señalice automáticamente anomalías estadísticas, récords poco conocidos o comparaciones contra-intuitivas que tengan potencial viral.",
+      "target_user": "Creador de contenido de fútbol con audiencia establecida (50k–1M seguidores) que necesita publicar contenido novedoso y sorprendente diariamente para mantener el engagement.",
+      "current_workaround": "Navegación manual de FBref buscando anomalías, seguimiento de otras cuentas para ver qué datos usan, y memoria personal del creador. Algunos usan Google Trends para validar temas calientes.",
+      "why_now": "La saturación de cuentas de estadísticas de fútbol en Twitter/Instagram/TikTok en 2024–2025 hace que el contenido genérico de datos conocidos ya no genere engagement. La diferenciación por datos poco conocidos es el nuevo vector competitivo.",
+      "success_metrics": [
+        "El motor sugiere al menos 5 datos potencialmente virales por día que el creador no habría encontrado manualmente",
+        "Al menos 30% de los datos sugeridos resultan en publicaciones con engagement superior al promedio del creador",
+        "Tiempo desde idea hasta publicación reducido de 45 minutos a menos de 15 minutos"
+      ],
+      "data_signals": [
+        "GitHub eddwebster/football_analytics tiene cientos de stars — la comunidad construye scrapers y análisis custom porque no hay herramientas que surfaceen insights automáticamente",
+        "YouTube Latinoamérica Football Revolution report (marzo 2026): creadores que innovaron en formato y datos únicos dominaron el consumo",
+        "La existencia de cuentas como Davoo Xeneize con 2M+ seguidores en Twitch confirma que el formato de 'dato sorprendente + reacción' es masivamente consumido"
+      ],
+      "severity": "medium",
+      "confidence": 0.75,
+      "notes": "Este problema es el más difícil de resolver técnicamente pero tiene el mayor diferenciador de mercado.",
+      "evidence": {
+        "source_url": "https://github.com/eddwebster/football_analytics",
+        "quote": "A collection of football analytics projects — community builds custom scrapers and analysis pipelines precisely because no existing tool surfaces surprising or counter-intuitive statistical insights automatically."
+      }
+    }
+  ]
+}

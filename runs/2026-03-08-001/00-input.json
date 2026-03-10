@@ -1,0 +1,10 @@
+{
+  "topic": "Plataforma de estadísticas y datos curiosos de fútbol para fanáticos en internet, al estilo de cuentas como Davoo Xeneize o La Cobra — contenido viral, datos históricos, comparativas, y hechos poco conocidos del fútbol mundial",
+  "quantity": 4,
+  "constraints": [
+    "budget: $200 USD",
+    "tech stack: Go backend, React frontend, any database",
+    "audience: fanáticos del fútbol en internet (Argentina y Latinoamérica principalmente)",
+    "contenido estilo redes sociales: viral, fácil de compartir, estadísticas impactantes"
+  ]
+}

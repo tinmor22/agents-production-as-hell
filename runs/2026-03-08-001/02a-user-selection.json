@@ -1,0 +1,21 @@
+{
+  "choosed_idea": {
+    "source": "nora",
+    "title": "Generación manual de tarjetas de estadísticas virales: 60+ minutos por pieza, zero automatización",
+    "detail": {
+      "title": "Generación manual de tarjetas de estadísticas virales: 60+ minutos por pieza, zero automatización",
+      "problem_statement": "Los creadores de fútbol producen imágenes con datos comparativos de forma totalmente manual. No existe ningún sistema que dado un prompt en español devuelva una tarjeta visual lista para publicar en menos de 60 segundos.",
+      "target_user": "Creador de fútbol en Twitter/Instagram/TikTok (Argentina, México, Colombia) con 5k–200k seguidores que publica entre 1 y 5 piezas visuales de estadísticas por día.",
+      "current_workaround": "Canva con templates manuales, búsqueda en FBref o Wikipedia, y copy-paste de números.",
+      "why_now": "El 66% de fanáticos en México (14–49 años) consume contenido de análisis de creadores semanalmente según reporte YouTube 2026.",
+      "severity": "high",
+      "confidence": 0.85
+    }
+  },
+  "chosen_maya_option": "StatCard CLI — Prompt-to-Card in 90 Seconds",
+  "other_ideas": [
+    { "source": "nora", "title": "No herramienta de acceso unificado a datos de fútbol para creadores indie latinoamericanos" },
+    { "source": "nora", "title": "Datos históricos de fútbol latinoamericano (AFA, Libertadores, historia pre-2000) fragmentados e inaccesibles para creadores" },
+    { "source": "nora", "title": "Ausencia de motor de descubrimiento de 'datos virales': los creadores no saben qué estadísticas van a explotar" }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "synthesis": "Latin American indie football creators are trapped in a 60-90 minute manual research loop across fragmented sources — the design space is a razor-sharp creator tool that collapses data aggregation, visual card generation, and viral anomaly detection into a single workflow priced below $20/month, distributed where creators already live (Twitter, TikTok, web).",
+  "solution_options": [
+    {
+      "option_name": "StatCard CLI — Prompt-to-Card in 90 Seconds",
+      "anchored_to_problem": "Generación manual de tarjetas de estadísticas virales: 60+ minutos por pieza, zero automatización",
+      "approach": "A CLI tool (installable via npm or a single binary) that accepts a Spanish-language prompt like 'Riquelme vs Zidane Champions League' and returns a ready-to-publish PNG card in under 90 seconds.",
+      "key_features": ["Spanish NLP parser for natural-language prompts", "API-Football + FBref adapter layer", "3 pre-built card templates rendered via SVG-to-PNG", "Output in 3 aspect ratios: 1:1, 4:5, 16:9", "Local config file for creator branding"],
+      "why_it_wins": "Compresses the entire workflow into a single command with zero UI friction.",
+      "main_risks": ["FBref scraping is fragile", "Spanish NLP entity extraction fails on ambiguous names", "Headless Chromium adds 300-500MB to binary"],
+      "mvp_cut": ["Drop 16:9 format", "Drop branding config", "Use only API-Football free tier"],
+      "pricing_angle": "$0 free (5 cards/day), $12/month Pro (100 cards/day)",
+      "estimated_days_solo": 10
+    },
+    {
+      "option_name": "GolazoAPI — REST Backend for Indie Latin Football Creators",
+      "anchored_to_problem": "No herramienta de acceso unificado a datos de fútbol para creadores indie latinoamericanos",
+      "approach": "A hosted REST API that aggregates API-Football and AFA historical data into clean endpoints priced at $15/month for creators.",
+      "key_features": ["Aggregated endpoints: /player/rivalry, /team/record-vs, /league/season-curiosity", "AFA Primera División historical data from 1995", "Spanish-language API documentation", "Webhook support", "Rate-limited free tier: 100 req/day"],
+      "why_it_wins": "Priced and documented for a creator, not a CTO. Spanish-first documentation is a moat.",
+      "main_risks": ["BDFA scraping legally grey", "Low retention if creators need to write code", "Race to the bottom on price"],
+      "mvp_cut": ["Drop webhooks", "Drop Transfermarkt", "Drop AFA data before 2010"],
+      "pricing_angle": "$0 free, $15/month Basic, $35/month Pro",
+      "estimated_days_solo": 12
+    },
+    {
+      "option_name": "ViralStat Engine — Daily Anomaly Feed for Football Creators",
+      "anchored_to_problem": "Ausencia de motor de descubrimiento de 'datos virales': los creadores no saben qué estadísticas van a explotar",
+      "approach": "A daily digest service (email + Telegram bot) that runs statistical anomaly detection every morning and surfaces 5-10 viral candidates to creators.",
+      "key_features": ["Nightly cron with Z-score anomaly detection", "Anniversary engine", "Record proximity alerts", "Daily email digest in Spanish", "Optional Telegram bot"],
+      "why_it_wins": "Creators need a scout. This runs overnight and lands in their inbox before they wake up.",
+      "main_risks": ["Quality of anomaly detection determines trust", "Email deliverability to LATAM", "Creators may share instead of paying"],
+      "mvp_cut": ["Drop Telegram bot", "Drop anniversary engine", "Drop LLM one-liners — use 5 static templates"],
+      "pricing_angle": "$0 free (3 items/day, 1 league), $9/month Pro",
+      "estimated_days_solo": 8
+    },
+    {
+      "option_name": "CreatorOS Football — Notion-Integrated Research Workspace",
+      "anchored_to_problem": "No herramienta de acceso unificado a datos de fútbol para creadores indie latinoamericanos",
+      "approach": "A Notion integration that auto-populates stat columns in a creator's content calendar from API-Football data.",
+      "key_features": ["Notion integration with player/team NLP detection", "Auto-fill of stat columns", "'Verify source' button", "3 database templates", "JSON export"],
+      "why_it_wins": "Lives inside the app 65% of LATAM creators already use. No behavior change required.",
+      "main_risks": ["Notion API rate limits", "Notion approval process 2-4 weeks", "Narrower addressable market"],
+      "mvp_cut": ["1 template only", "Drop JSON export", "Manual @player: tags instead of NLP"],
+      "pricing_angle": "$0 free (10 auto-fills/month), $14/month Pro",
+      "estimated_days_solo": 11
+    },
+    {
+      "option_name": "BDFA Resurrector — Historical LATAM Football Data API",
+      "anchored_to_problem": "Datos históricos de fútbol latinoamericano (AFA, Libertadores, historia pre-2000) fragmentados e inaccesibles para creadores",
+      "approach": "Scrape, clean, and expose BDFA's historical AFA player and match records as a public REST API. SQLite + Go on Fly.io, under $5/month infra.",
+      "key_features": ["AFA match results from 1931 to present", "Player career records in Argentine football", "Libertadores and Copa Argentina historical results", "Simple query interface", "Data provenance field"],
+      "why_it_wins": "Monopoly on AFA history before 2000. No competing API covers this.",
+      "main_risks": ["Data quality inconsistent pre-1980", "Legal exposure from BDFA scraping", "Low conversion without consumer-facing product"],
+      "mvp_cut": ["AFA Primera División only", "Start from 1980", "Drop provenance links"],
+      "pricing_angle": "$0 free (500 req/day), $19/month Pro",
+      "estimated_days_solo": 13
+    },
+    {
+      "option_name": "PromptCard SaaS — Web App for Viral Football Cards in Spanish",
+      "anchored_to_problem": "Generación manual de tarjetas de estadísticas virales: 60+ minutos por pieza, zero automatización",
+      "approach": "A web app where a creator types a comparison in Spanish, sees a live preview, and downloads a ready-to-post PNG. No install, no CLI. Puppeteer server-side rendering.",
+      "key_features": ["Spanish-language prompt with autocomplete", "Live card preview in browser", "5 pre-built templates with color variants", "One-click Twitter/Instagram caption generator", "Watermark with creator's Twitter handle"],
+      "why_it_wins": "Zero technical barrier. Watermark creates viral loop: every shared card is acquisition.",
+      "main_risks": ["Puppeteer slow at scale and expensive", "5 templates causes churn", "NLP errors damage creator reputation"],
+      "mvp_cut": ["Drop club colors template", "Drop caption generator", "Drop autocomplete — manual exact name entry"],
+      "pricing_angle": "$0 free (3 cards/day, mandatory watermark), $11/month Pro",
+      "estimated_days_solo": 12
+    }
+  ],
+  "shortlist": [
+    {
+      "option_name": "StatCard CLI — Prompt-to-Card in 90 Seconds",
+      "score": { "problem_solution_fit": 5, "buildability": 5, "monetization_clarity": 4 },
+      "rationale": "Directly eliminates the highest-severity pain (60+ min per card) with a single-command workflow, ships in 10 days with no external infra dependencies."
+    },
+    {
+      "option_name": "ViralStat Engine — Daily Anomaly Feed for Football Creators",
+      "score": { "problem_solution_fit": 4, "buildability": 5, "monetization_clarity": 5 },
+      "rationale": "Newsletter paywall model is the clearest monetization path. Buildable in 8 days solo. Solves the viral discovery problem creators actively feel."
+    },
+    {
+      "option_name": "PromptCard SaaS — Web App for Viral Football Cards in Spanish",
+      "score": { "problem_solution_fit": 5, "buildability": 3, "monetization_clarity": 5 },
+      "rationale": "Highest total addressable reach, zero technical skills required from creators, watermark viral loop makes it self-distributing."
+    }
+  ]
+}
