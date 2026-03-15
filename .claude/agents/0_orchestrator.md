@@ -229,6 +229,7 @@ Invoke `6_coder_viktor` with:
 
 ```json
 {
+  "run_dir": "<RUN_DIR>",
   "choosed_idea": { ... },
   "choosed_solution": { ... },
   "design": { ... },
@@ -264,7 +265,8 @@ Invoke `7_observability_priya` with only the brief context:
 ```json
 {
   "chosen_option": "<choosed_solution.chosen_option>",
-  "target_user": "<choosed_solution.target_user>"
+  "target_user": "<choosed_solution.target_user>",
+  "project_dir": "<RUN_DIR>/project"
 }
 ```
 
@@ -288,7 +290,8 @@ Invoke `8_deployer_nate` with only the brief context:
 ```json
 {
   "chosen_option": "<choosed_solution.chosen_option>",
-  "target_user": "<choosed_solution.target_user>"
+  "target_user": "<choosed_solution.target_user>",
+  "project_dir": "<RUN_DIR>/project"
 }
 ```
 

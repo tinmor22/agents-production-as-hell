@@ -15,6 +15,7 @@ type CardData struct {
 type EntityInfo struct {
 	Name        string
 	AccentColor string
+	PhotoData   []byte // optional: JPEG/PNG bytes drawn as background
 }
 
 // StatRow is a single stat comparison line on the card.
