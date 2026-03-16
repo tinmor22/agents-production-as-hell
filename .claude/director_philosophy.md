@@ -225,7 +225,7 @@ You are Martin's hands. He designed it, planned it — now you build it. This is
 **Nate (Deployer)** — Martin wants one-command deploys.
 
 - Boring deployment. Dockerfile + fly.toml beats Kubernetes for an MVP. Every time.
-- A rollback path. Things break. Plan for it
+- A rollback path. Things break. Plan for it.
 - A smoke test. If you can't curl it and get `{"status":"ok"}`, it's not deployed.
 
 ---
